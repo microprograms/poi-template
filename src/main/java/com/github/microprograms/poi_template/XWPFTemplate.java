@@ -23,37 +23,36 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import com.github.microprograms.poi_template.config.Configure;
-import com.github.microprograms.poi_template.exception.ResolverException;
-import com.github.microprograms.poi_template.render.DefaultRender;
-import com.github.microprograms.poi_template.render.Render;
-import com.github.microprograms.poi_template.resolver.Resolver;
-import com.github.microprograms.poi_template.resolver.TemplateResolver;
-import com.github.microprograms.poi_template.template.MetaTemplate;
-import com.github.microprograms.poi_template.util.PoiTemplateUtils;
-import com.github.microprograms.poi_template.util.Preconditions;
-import com.github.microprograms.poi_template.xwpf.NiceXWPFDocument;
-
 import org.apache.poi.Version;
 import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.microprograms.poi_template.config.Configure;
+import com.github.microprograms.poi_template.exception.ResolverException;
+import com.github.microprograms.poi_template.policy.RenderPolicy;
+import com.github.microprograms.poi_template.render.DefaultRender;
+import com.github.microprograms.poi_template.render.Render;
+import com.github.microprograms.poi_template.resolver.Resolver;
+import com.github.microprograms.poi_template.resolver.TemplateResolver;
+import com.github.microprograms.poi_template.template.MetaTemplate;
+import com.github.microprograms.poi_template.util.PoitlIOUtils;
+import com.github.microprograms.poi_template.util.Preconditions;
+import com.github.microprograms.poi_template.xwpf.NiceXWPFDocument;
+
 /**
- * The facade of word(docx) template
- * <p>
- * It works by expanding tags in a template using values provided in a Map or
- * Object.
- * </p>
+ * The template of word(docx)
  */
 public class XWPFTemplate implements Closeable {
     private static Logger logger = LoggerFactory.getLogger(XWPFTemplate.class);
-    private static final String SUPPORT_MINIMUM_VERSION = "4.1.2";
+    private static final String SUPPORT_MINIMUM_VERSION = "4.1.1";
 
     private NiceXWPFDocument doc;
+
     private Configure config;
     private Resolver resolver;
     private Render renderer;
+
     private List<MetaTemplate> eleTemplates;
 
     static {
@@ -61,17 +60,16 @@ public class XWPFTemplate implements Closeable {
             Class.forName("org.apache.poi.Version");
             Preconditions.checkMinimumVersion(Version.getVersion(), SUPPORT_MINIMUM_VERSION,
                     (cur, min) -> "Require Apache POI version at least " + min + ", but now is " + cur
-                            + ", please check the dependency of project.");
+                    + ", please check the dependency of project.");
         } catch (ClassNotFoundException e) {
             // no-op
         }
     }
 
-    private XWPFTemplate() {
-    }
+    private XWPFTemplate() {}
 
-    public static XWPFTemplate compile(String path) {
-        return compile(new File(path));
+    public static XWPFTemplate compile(String filePath) {
+        return compile(new File(filePath));
     }
 
     public static XWPFTemplate compile(File file) {
@@ -82,8 +80,8 @@ public class XWPFTemplate implements Closeable {
         return compile(inputStream, Configure.createDefault());
     }
 
-    public static XWPFTemplate compile(String path, Configure config) {
-        return compile(new File(path), config);
+    public static XWPFTemplate compile(String filePath, Configure config) {
+        return compile(new File(filePath), config);
     }
 
     public static XWPFTemplate compile(File file, Configure config) {
@@ -94,6 +92,14 @@ public class XWPFTemplate implements Closeable {
         }
     }
 
+    /**
+     * template file as InputStream
+     * 
+     * @param inputStream
+     * @param config
+     * @return
+     * @version 1.2.0
+     */
     public static XWPFTemplate compile(InputStream inputStream, Configure config) {
         try {
             XWPFTemplate template = new XWPFTemplate();
@@ -104,7 +110,7 @@ public class XWPFTemplate implements Closeable {
             template.eleTemplates = template.resolver.resolveDocument(template.doc);
             return template;
         } catch (OLE2NotOfficeXmlFileException e) {
-            logger.error("currently only supports .docx format");
+            logger.error("Poi-tl currently only supports .docx format");
             throw new ResolverException("Compile template failed", e);
         } catch (IOException e) {
             throw new ResolverException("Compile template failed", e);
@@ -114,7 +120,7 @@ public class XWPFTemplate implements Closeable {
     /**
      * Render the template by data model
      * 
-     * @param model render data
+     * @param model
      * @return
      */
     public XWPFTemplate render(Object model) {
@@ -123,11 +129,12 @@ public class XWPFTemplate implements Closeable {
     }
 
     /**
-     * Render the template by data model and write to OutputStream, do'not forget
-     * invoke {@link XWPFTemplate#close()}, {@link OutputStream#close()}
+     * Render the template by data model and write to OutputStream, do'not
+     * forget invoke #{@link XWPFTemplate#close()},
+     * #{@link OutputStream#close()}
      * 
-     * @param model render data
-     * @param out   output
+     * @param model
+     * @param out
      * @return
      * @throws IOException
      */
@@ -138,10 +145,23 @@ public class XWPFTemplate implements Closeable {
     }
 
     /**
-     * write to output stream, do'not forget invoke {@link XWPFTemplate#close()},
-     * {@link OutputStream#close()} finally
+     * bind render policy
      * 
-     * @param out eg.ServletOutputStream
+     * @param tagName
+     * @param policy
+     * @return
+     */
+    public XWPFTemplate bind(String tagName, RenderPolicy policy) {
+        this.config.customPolicy(tagName, policy);
+        return this;
+    }
+
+    /**
+     * write to output stream, do'not forget invoke
+     * #{@link XWPFTemplate#close()}, #{@link OutputStream#close()} finally
+     * 
+     * @param out
+     *            eg.ServletOutputStream
      * @throws IOException
      */
     public void write(OutputStream out) throws IOException {
@@ -149,9 +169,9 @@ public class XWPFTemplate implements Closeable {
     }
 
     /**
-     * write to file, this method will close all the stream
+     * write to file
      * 
-     * @param path output path
+     * @param path
      * @throws IOException
      */
     public void writeToFile(String path) throws IOException {
@@ -160,18 +180,19 @@ public class XWPFTemplate implements Closeable {
             out = new FileOutputStream(path);
             this.write(out);
             out.flush();
-        } finally {
-            PoiTemplateUtils.closeQuietlyMulti(this.doc, out);
+        }
+        finally {
+            PoitlIOUtils.closeQuietlyMulti(this.doc, out);
         }
     }
 
     /**
      * reload the template
      * 
-     * @param doc load new template document
+     * @param doc
      */
     public void reload(NiceXWPFDocument doc) {
-        PoiTemplateUtils.closeLoggerQuietly(this.doc);
+        PoitlIOUtils.closeLoggerQuietly(this.doc);
         this.doc = doc;
         this.eleTemplates = this.resolver.resolveDocument(doc);
     }
@@ -186,11 +207,6 @@ public class XWPFTemplate implements Closeable {
         this.doc.close();
     }
 
-    /**
-     * Get all tags in the document
-     * 
-     * @return
-     */
     public List<MetaTemplate> getElementTemplates() {
         return eleTemplates;
     }
@@ -199,20 +215,10 @@ public class XWPFTemplate implements Closeable {
         return this.doc;
     }
 
-    /**
-     * Get configuration
-     * 
-     * @return
-     */
     public Configure getConfig() {
         return config;
     }
 
-    /**
-     * Get Resolver
-     * 
-     * @return
-     */
     public Resolver getResolver() {
         return resolver;
     }

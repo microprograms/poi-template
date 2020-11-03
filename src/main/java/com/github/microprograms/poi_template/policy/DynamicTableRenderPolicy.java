@@ -25,13 +25,10 @@ import com.github.microprograms.poi_template.template.run.RunTemplate;
 import com.github.microprograms.poi_template.util.TableTools;
 
 /**
- * Support the text template(anywhere in table) in the table to dynamically hold
- * the XWPFTable object.
+ * 支持表格内的文本模板动态持有XWPFTable对象 <br/>
  * 
  * <p>
- * When the style of a table has been designed, we only need to process some
- * cells in the table. Through this class, we can get the XWPFTable object of
- * the entire table, and then use POI to process the table
+ * 通常使用在一个表格的样式已经制作好，我们仅仅需要处理表格内部某些单元格， 通过此类可以获得整个表格的XWPFTable对象，进而使用POI处理这个表格
  * </p>
  */
 public abstract class DynamicTableRenderPolicy implements RenderPolicy {
@@ -50,10 +47,14 @@ public abstract class DynamicTableRenderPolicy implements RenderPolicy {
             XWPFTable table = cell.getTableRow().getTable();
             render(table, data);
         } catch (Exception e) {
-            throw new RenderException("Dynamic render table error:" + e.getMessage(), e);
+            throw new RenderException("dynamic table error:" + e.getMessage(), e);
         }
     }
 
-    public abstract void render(XWPFTable table, Object data) throws Exception;
+    /**
+     * @param table 表格
+     * @param data  数据
+     */
+    public abstract void render(XWPFTable table, Object data);
 
 }

@@ -17,18 +17,15 @@ import java.util.List;
 
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-import com.github.microprograms.poi_template.data.NumberingRenderData;
+import com.github.microprograms.poi_template.data.MiniTableRenderData;
+import com.github.microprograms.poi_template.data.NumbericRenderData;
 import com.github.microprograms.poi_template.data.PictureRenderData;
-import com.github.microprograms.poi_template.data.TableRenderData;
 import com.github.microprograms.poi_template.data.TextRenderData;
 import com.github.microprograms.poi_template.render.RenderContext;
 import com.github.microprograms.poi_template.util.StyleUtils;
 import com.github.microprograms.poi_template.xwpf.BodyContainer;
 import com.github.microprograms.poi_template.xwpf.BodyContainerFactory;
 
-/**
- * @Deprecated use {@link DocumentRenderPolicy} instead
- */
 public class ListRenderPolicy extends AbstractRenderPolicy<List<Object>> {
 
     @Override
@@ -46,10 +43,10 @@ public class ListRenderPolicy extends AbstractRenderPolicy<List<Object>> {
                 XWPFRun createRun = bodyContainer.insertNewParagraph(run).createRun();
                 StyleUtils.styleRun(createRun, run);
                 TextRenderPolicy.Helper.renderTextRun(createRun, data);
-            } else if (data instanceof TableRenderData) {
-                TableRenderPolicy.Helper.renderTable(run, (TableRenderData) data);
-            } else if (data instanceof NumberingRenderData) {
-                NumberingRenderPolicy.Helper.renderNumbering(run, (NumberingRenderData) data);
+            } else if (data instanceof MiniTableRenderData) {
+                MiniTableRenderPolicy.Helper.renderMiniTable(run, (MiniTableRenderData) data);
+            } else if (data instanceof NumbericRenderData) {
+                NumbericRenderPolicy.Helper.renderNumberic(run, (NumbericRenderData) data);
             } else if (data instanceof PictureRenderData) {
                 PictureRenderPolicy.Helper.renderPicture(bodyContainer.insertNewParagraph(run).createRun(),
                         (PictureRenderData) data);

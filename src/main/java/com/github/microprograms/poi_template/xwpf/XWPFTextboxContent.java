@@ -32,8 +32,8 @@ public class XWPFTextboxContent implements IBody {
     private XmlObject xmlObject;
 
     /**
-     * If a table cell does not include at least one block-level element, then this
-     * document shall be considered corrupt
+     * If a table cell does not include at least one block-level element, then
+     * this document shall be considered corrupt
      */
     public XWPFTextboxContent(CTTxbxContent ctTxbxContent, XWPFRun run, IBody part, XmlObject xmlObject) {
         this.ctTxbxContent = ctTxbxContent;
@@ -68,23 +68,19 @@ public class XWPFTextboxContent implements IBody {
     }
 
     /**
-     * get the to which the textbox belongs
+     * get the to which the TableCell belongs
      *
      * @see org.apache.poi.xwpf.usermodel.IBody#getPart()
      */
-    @Override
     @SuppressWarnings("deprecation")
     public POIXMLDocumentPart getPart() {
-        // TODO
         return run.getParagraph().getPart();
     }
 
     /**
      * @see org.apache.poi.xwpf.usermodel.IBody#getPartType()
      */
-    @Override
     public BodyType getPartType() {
-        // TODO
         return BodyType.TABLECELL;
     }
 
@@ -93,7 +89,6 @@ public class XWPFTextboxContent implements IBody {
      *
      * @see org.apache.poi.xwpf.usermodel.IBody#getBodyElements()
      */
-    @Override
     public List<IBodyElement> getBodyElements() {
         return Collections.unmodifiableList(bodyElements);
     }
@@ -108,13 +103,12 @@ public class XWPFTextboxContent implements IBody {
     /**
      * returns a list of paragraphs
      */
-    @Override
     public List<XWPFParagraph> getParagraphs() {
         return Collections.unmodifiableList(paragraphs);
     }
 
     /**
-     * Add a Paragraph to this textbox
+     * Add a Paragraph to this Table Cell
      *
      * @return The paragraph which was added
      */
@@ -127,7 +121,8 @@ public class XWPFTextboxContent implements IBody {
     /**
      * add a Paragraph to this TableCell
      *
-     * @param p the paragaph which has to be added
+     * @param p
+     *            the paragaph which has to be added
      */
     public void addParagraph(XWPFParagraph p) {
         paragraphs.add(p);
@@ -135,9 +130,10 @@ public class XWPFTextboxContent implements IBody {
     }
 
     /**
-     * removes a paragraph of this textbox
+     * removes a paragraph of this tablecell
      *
-     * @param pos The position in the list of paragraphs, 0-based
+     * @param pos
+     *            The position in the list of paragraphs, 0-based
      */
     public void removeParagraph(int pos) {
         XWPFParagraph removedParagraph = paragraphs.get(pos);
@@ -147,37 +143,20 @@ public class XWPFTextboxContent implements IBody {
     }
 
     /**
-     * Removes a specific paragraph from this textbox
+     * if there is a corresponding {@link XWPFParagraph} of the parameter
+     * ctTable in the paragraphList of this table the method will return this
+     * paragraph if there is no corresponding {@link XWPFParagraph} the method
+     * will return null
      *
-     * @param paragraph - {@link XWPFParagraph} object to remove
+     * @param p
+     *            is instance of CTP and is searching for an XWPFParagraph
+     * @return null if there is no XWPFParagraph with an corresponding
+     *         CTPparagraph in the paragraphList of this table XWPFParagraph
+     *         with the correspondig CTP p
      */
-    public void removeParagraph(XWPFParagraph paragraph) {
-        if (paragraphs.contains(paragraph)) {
-            CTP ctP = paragraph.getCTP();
-            XmlCursor c = ctP.newCursor();
-            c.removeXml();
-            c.dispose();
-            paragraphs.remove(paragraph);
-            bodyElements.remove(paragraph);
-        }
-    }
-
-    /**
-     * if there is a corresponding {@link XWPFParagraph} of the parameter ctp in the
-     * paragraphList of this textbox the method will return this paragraph if there
-     * is no corresponding {@link XWPFParagraph} the method will return null
-     *
-     * @param p is instance of CTP and is searching for an XWPFParagraph
-     * @return null if there is no XWPFParagraph with an corresponding CTPparagraph
-     *         in the paragraphList of this table XWPFParagraph with the
-     *         correspondig CTP p
-     */
-    @Override
     public XWPFParagraph getParagraph(CTP p) {
         for (XWPFParagraph paragraph : paragraphs) {
-            if (p.equals(paragraph.getCTP())) {
-                return paragraph;
-            }
+            if (p.equals(paragraph.getCTP())) { return paragraph; }
         }
         return null;
     }
@@ -185,14 +164,12 @@ public class XWPFTextboxContent implements IBody {
     /**
      * add a new paragraph at position of the cursor
      *
-     * @param cursor The XmlCursor structure created with XmlBeans
+     * @param cursor
+     *            The XmlCursor structure created with XmlBeans
      * @return the inserted paragraph
      */
-    @Override
     public XWPFParagraph insertNewParagraph(final XmlCursor cursor) {
-        if (!isCursorInTextBox(cursor)) {
-            return null;
-        }
+        if (!isCursorInTableCell(cursor)) { return null; }
 
         String uri = CTP.type.getName().getNamespaceURI();
         String localPart = "p";
@@ -216,9 +193,7 @@ public class XWPFTextboxContent implements IBody {
         p2.dispose();
         while (cursor.toPrevSibling()) {
             o = cursor.getObject();
-            if (o instanceof CTP || o instanceof CTTbl) {
-                i++;
-            }
+            if (o instanceof CTP || o instanceof CTTbl) i++;
         }
         bodyElements.add(i, newP);
         p2 = p.newCursor();
@@ -231,7 +206,7 @@ public class XWPFTextboxContent implements IBody {
     /**
      * verifies that cursor is on the right position
      */
-    private boolean isCursorInTextBox(XmlCursor cursor) {
+    private boolean isCursorInTableCell(XmlCursor cursor) {
         XmlCursor verify = cursor.newCursor();
         verify.toParent();
         boolean result = (verify.getObject() == this.ctTxbxContent);
@@ -242,11 +217,8 @@ public class XWPFTextboxContent implements IBody {
     /**
      * @see org.apache.poi.xwpf.usermodel.IBody#getParagraphArray(int)
      */
-    @Override
     public XWPFParagraph getParagraphArray(int pos) {
-        if (pos >= 0 && pos < paragraphs.size()) {
-            return paragraphs.get(pos);
-        }
+        if (pos >= 0 && pos < paragraphs.size()) { return paragraphs.get(pos); }
         return null;
     }
 
@@ -255,7 +227,6 @@ public class XWPFTextboxContent implements IBody {
      *
      * @see org.apache.poi.xwpf.usermodel.IBody#getTable(org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTbl)
      */
-    @Override
     public XWPFTable getTable(CTTbl ctTable) {
         return null;
     }
@@ -263,15 +234,14 @@ public class XWPFTextboxContent implements IBody {
     /**
      * @see org.apache.poi.xwpf.usermodel.IBody#getTableArray(int)
      */
-    @Override
     public XWPFTable getTableArray(int pos) {
+
         return null;
     }
 
     /**
      * @see org.apache.poi.xwpf.usermodel.IBody#getTables()
      */
-    @Override
     public List<XWPFTable> getTables() {
         return null;
     }
@@ -282,19 +252,15 @@ public class XWPFTextboxContent implements IBody {
      * @see org.apache.poi.xwpf.usermodel.IBody#insertTable(int,
      *      org.apache.poi.xwpf.usermodel.XWPFTable)
      */
-    @Override
-    public void insertTable(int pos, XWPFTable table) {
-        throw new UnsupportedOperationException();
-    }
+    public void insertTable(int pos, XWPFTable table) {}
 
-    @Override
     public XWPFDocument getXWPFDocument() {
         return part.getXWPFDocument();
     }
 
     @Override
     public XWPFTable insertNewTbl(XmlCursor cursor) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override

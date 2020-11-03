@@ -14,12 +14,14 @@
 package com.github.microprograms.poi_template.config;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.github.microprograms.poi_template.config.Configure.CustomPolicyFinder;
+import com.github.microprograms.poi_template.config.Configure.ELMode;
 import com.github.microprograms.poi_template.config.Configure.ValidErrorHandler;
 import com.github.microprograms.poi_template.policy.RenderPolicy;
-import com.github.microprograms.poi_template.render.compute.DefaultELRenderDataCompute;
+import com.github.microprograms.poi_template.render.compute.ELObjectRenderDataCompute;
 import com.github.microprograms.poi_template.render.compute.RenderDataComputeFactory;
 import com.github.microprograms.poi_template.render.compute.SpELRenderDataCompute;
 import com.github.microprograms.poi_template.resolver.ElementTemplateFactory;
@@ -31,28 +33,25 @@ import org.apache.poi.xddf.usermodel.chart.ChartTypes;
 
 public class ConfigureBuilder {
     private Configure config = new Configure();
-    private boolean usedSpringEL;
-    private boolean changeRegex;
 
     public ConfigureBuilder gramer(String prefix, String suffix) {
-        config.setGramerPrefix(prefix);
-        config.setGramerSuffix(suffix);
+        config.gramerPrefix = prefix;
+        config.gramerSuffix = suffix;
         return this;
     }
 
     public ConfigureBuilder iterableLeft(char c) {
-        config.setIterable(Pair.of(c, config.getIterable().getRight()));
+        config.iterable = Pair.of(c, config.iterable.getRight());
         return this;
     }
 
     public ConfigureBuilder grammerRegex(String reg) {
-        changeRegex = true;
-        config.setGrammerRegex(reg);
+        config.grammerRegex = reg;
         return this;
     }
 
     public ConfigureBuilder useSpringEL() {
-        return useSpringEL(root -> new SpELRenderDataCompute(root));
+        return useSpringEL(root -> new SpELRenderDataCompute(root, new HashMap<>()));
     }
 
     public ConfigureBuilder useSpringEL(Map<String, Method> spELFunction) {
@@ -60,30 +59,27 @@ public class ConfigureBuilder {
     }
 
     public ConfigureBuilder useSpringEL(RenderDataComputeFactory renderDataComputeFactory) {
-        usedSpringEL = true;
+        config.elMode = ELMode.SPEL_MODE;
         return _setRenderDataComputeFactory(renderDataComputeFactory);
     }
 
-    public ConfigureBuilder useDefaultStrictEL() {
-        return _setRenderDataComputeFactory(root -> new DefaultELRenderDataCompute(root, true));
-    }
-
-    public ConfigureBuilder useDefaultEL() {
-        return _setRenderDataComputeFactory(root -> new DefaultELRenderDataCompute(root, false));
-    }
-
-    public ConfigureBuilder validErrorHandler(ValidErrorHandler handler) {
-        config.setValidErrorHandler(handler);
-        return this;
+    public ConfigureBuilder useDefaultEL(boolean isStrict) {
+        config.elMode = isStrict ? ELMode.POI_TL_STICT_MODE : ELMode.POI_TL_STANDARD_MODE;
+        return _setRenderDataComputeFactory(root -> new ELObjectRenderDataCompute(root, isStrict));
     }
 
     private ConfigureBuilder _setRenderDataComputeFactory(RenderDataComputeFactory renderDataComputeFactory) {
-        config.setRenderDataComputeFactory(renderDataComputeFactory);
+        config.renderDataComputeFactory = renderDataComputeFactory;
         return this;
     }
 
-    public ConfigureBuilder elementTemplateFactory(ElementTemplateFactory elementTemplateFactory) {
-        config.setElementTemplateFactory(elementTemplateFactory);
+    public ConfigureBuilder setValidErrorHandler(ValidErrorHandler handler) {
+        config.handler = handler;
+        return this;
+    }
+
+    public ConfigureBuilder setElementTemplateFactory(ElementTemplateFactory elementTemplateFactory) {
+        config.elementTemplateFactory = elementTemplateFactory;
         return this;
     }
 
@@ -102,19 +98,19 @@ public class ConfigureBuilder {
         return this;
     }
 
+    public ConfigureBuilder setCustomPolicyFinder(CustomPolicyFinder customPolicyFinder) {
+        config.setCustomPolicyFinder(customPolicyFinder);
+        return this;
+    }
+
     public ConfigureBuilder bind(String tagName, RenderPolicy policy) {
         config.customPolicy(tagName, policy);
         return this;
     }
 
-    public ConfigureBuilder customPolicyFinder(CustomPolicyFinder customPolicyFinder) {
-        config.setCustomPolicyFinder(customPolicyFinder);
-        return this;
-    }
-
     public Configure build() {
-        if (usedSpringEL && !changeRegex) {
-            config.setGramerPrefix(RegexUtils.createGeneral(config.getGramerPrefix(), config.getGramerSuffix()));
+        if (config.elMode == ELMode.SPEL_MODE) {
+            config.grammerRegex = RegexUtils.createGeneral(config.gramerPrefix, config.gramerSuffix);
         }
         return config;
     }

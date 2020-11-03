@@ -14,13 +14,12 @@
 
 package com.github.microprograms.poi_template.render.processor;
 
-import java.util.Objects;
-
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.microprograms.poi_template.XWPFTemplate;
+import com.github.microprograms.poi_template.exception.RenderException;
 import com.github.microprograms.poi_template.policy.DocxRenderPolicy;
 import com.github.microprograms.poi_template.policy.RenderPolicy;
 import com.github.microprograms.poi_template.render.compute.RenderDataCompute;
@@ -30,9 +29,6 @@ import com.github.microprograms.poi_template.template.ElementTemplate;
 import com.github.microprograms.poi_template.template.PictureTemplate;
 import com.github.microprograms.poi_template.template.run.RunTemplate;
 
-/**
- * process element template
- */
 public class ElementProcessor extends DefaultTemplateProcessor {
 
     private static Logger logger = LoggerFactory.getLogger(ElementProcessor.class);
@@ -58,7 +54,9 @@ public class ElementProcessor extends DefaultTemplateProcessor {
 
     void visit(ElementTemplate eleTemplate) {
         RenderPolicy policy = eleTemplate.findPolicy(template.getConfig());
-        Objects.requireNonNull(policy, "Cannot find render policy: [" + eleTemplate.getTagName() + "]");
+        if (null == policy) {
+            throw new RenderException("Cannot find render policy: [" + eleTemplate.getTagName() + "]");
+        }
         if (policy instanceof DocxRenderPolicy) return;
         logger.info("Start render Template {}, Sign:{}, policy:{}", eleTemplate, eleTemplate.getSign(),
                 ClassUtils.getShortClassName(policy.getClass()));

@@ -17,16 +17,20 @@ import java.text.MessageFormat;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * 正则工具类
+ */
 public final class RegexUtils {
 
     /**
-     * generic regular pattern
+     * 通用全能的正则表达式Pattern
      */
     public static final String REGEX_GENERAL = "((?!{0})(?!{1}).)*";
 
     public static String escapeExprSpecialWord(String keyword) {
         if (StringUtils.isNotBlank(keyword)) {
-            String[] fbsArr = { "\\", "$", "(", ")", "*", "+", ".", "[", "]", "?", "^", "{", "}", "|" };
+            String[] fbsArr = { "\\", "$", "(", ")", "*", "+", ".", "[", "]", "?", "^", "{", "}",
+                    "|" };
             for (String key : fbsArr) {
                 if (keyword.contains(key)) {
                     keyword = keyword.replace(key, "\\" + key);
@@ -37,6 +41,7 @@ public final class RegexUtils {
     }
 
     public static String createGeneral(String prefix, String suffix) {
-        return MessageFormat.format(REGEX_GENERAL, escapeExprSpecialWord(prefix), escapeExprSpecialWord(suffix));
+        return MessageFormat.format(REGEX_GENERAL, escapeExprSpecialWord(prefix),
+                escapeExprSpecialWord(suffix));
     }
 }

@@ -22,39 +22,14 @@ import com.github.microprograms.poi_template.template.run.RunTemplate;
 
 public interface Visitor {
 
-    /**
-     * visit run template
-     * 
-     * @param runTemplate
-     */
     void visit(RunTemplate runTemplate);
 
-    /**
-     * visit iterable template
-     * 
-     * @param iterableTemplate
-     */
     void visit(IterableTemplate iterableTemplate);
 
-    /**
-     * visit inline iterable template
-     * 
-     * @param iterableTemplate
-     */
     void visit(InlineIterableTemplate iterableTemplate);
 
-    /**
-     * visit picture template
-     * 
-     * @param pictureTemplate
-     */
     void visit(PictureTemplate pictureTemplate);
 
-    /**
-     * visit chart template
-     * 
-     * @param referenceTemplate
-     */
     void visit(ChartTemplate referenceTemplate);
 
 }

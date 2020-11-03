@@ -13,31 +13,28 @@
  */
 package com.github.microprograms.poi_template.data;
 
+import com.github.microprograms.poi_template.data.builder.StyleBuilder;
 import com.github.microprograms.poi_template.data.style.Style;
 
 /**
- * Basic text template
+ * 文本数据
  */
 public class TextRenderData implements RenderData {
-
-    private static final long serialVersionUID = 1L;
-
     protected Style style;
 
     /**
-     * \n means line break
+     * \n 表示换行
      */
     protected String text;
 
-    public TextRenderData() {
-    }
+    public TextRenderData() {}
 
     public TextRenderData(String text) {
         this.text = text;
     }
 
     public TextRenderData(String color, String text) {
-        this.style = Style.builder().buildColor(color).build();
+        this.style = StyleBuilder.newBuilder().buildColor(color).build();
         this.text = text;
     }
 
@@ -61,7 +58,7 @@ public class TextRenderData implements RenderData {
     public void setText(String text) {
         this.text = text;
     }
-
+    
     @Override
     public String toString() {
         return text;

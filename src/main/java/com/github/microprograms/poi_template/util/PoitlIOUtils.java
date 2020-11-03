@@ -20,9 +20,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PoiTemplateUtils {
+public class PoitlIOUtils {
 
-    private static Logger logger = LoggerFactory.getLogger(PoiTemplateUtils.class);
+    private static Logger logger = LoggerFactory.getLogger(PoitlIOUtils.class);
 
     public static void closeLoggerQuietly(final Closeable c) {
         if (c != null) {
@@ -44,8 +44,7 @@ public class PoiTemplateUtils {
         if (c != null) {
             try {
                 c.close();
-            } catch (final IOException ignored) {
-            }
+            } catch (final IOException ignored) {}
         }
     }
 

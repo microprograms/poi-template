@@ -13,7 +13,6 @@
  */
 package com.github.microprograms.poi_template.render.compute;
 
-@FunctionalInterface
 public interface RenderDataComputeFactory {
 
     RenderDataCompute newCompute(Object model);

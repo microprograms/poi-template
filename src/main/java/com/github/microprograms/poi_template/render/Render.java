@@ -15,6 +15,9 @@ package com.github.microprograms.poi_template.render;
 
 import com.github.microprograms.poi_template.XWPFTemplate;
 
+/**
+ * The interface of render
+ */
 public interface Render {
 
     void render(XWPFTemplate template, Object root);

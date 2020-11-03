@@ -29,21 +29,22 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDrawing;
 public class CTDrawingWrapper {
 
     private CTDrawing ctDrawing;
-    private CTNonVisualDrawingProps docPr;
 
     public CTDrawingWrapper(CTDrawing ctDrawing) {
         this.ctDrawing = ctDrawing;
-        if (ctDrawing.sizeOfAnchorArray() > 0) {
-            CTAnchor anchorArray = ctDrawing.getAnchorArray(0);
-            this.docPr = anchorArray.getDocPr();
-
-        } else if (ctDrawing.sizeOfInlineArray() > 0) {
-            CTInline inline = ctDrawing.getInlineArray(0);
-            this.docPr = inline.getDocPr();
-        }
     }
 
     public String getTitle() {
+        CTNonVisualDrawingProps docPr = null;
+        if (ctDrawing.sizeOfAnchorArray() > 0) {
+            CTAnchor anchorArray = ctDrawing.getAnchorArray(0);
+            docPr = anchorArray.getDocPr();
+
+        } else if (ctDrawing.sizeOfInlineArray() > 0) {
+            CTInline inline = ctDrawing.getInlineArray(0);
+            docPr = inline.getDocPr();
+        }
+
         if (null != docPr) {
             QName TITLE = new QName("", "title");
             CTNonVisualDrawingPropsImpl docPrImpl = (CTNonVisualDrawingPropsImpl) docPr;
@@ -51,18 +52,12 @@ public class CTDrawingWrapper {
                 // check_orphaned();
                 SimpleValue localSimpleValue = null;
                 localSimpleValue = (SimpleValue) docPrImpl.get_store().find_attribute_user(TITLE);
-                if (localSimpleValue == null) {
-                    return null;
-                }
+                if (localSimpleValue == null) { return null; }
                 return localSimpleValue.getStringValue();
             }
             // String descr = docPr.getDescr();
         }
         return null;
-    }
-
-    public String getDesc() {
-        return null == docPr ? null : docPr.getDescr();
     }
 
     public String getCharId() {
@@ -83,7 +78,8 @@ public class CTDrawingWrapper {
             if (null == xmlObject || !(xmlObject instanceof CTRelId)) return null;
             CTRelId cchart = (CTRelId) xmlObject;
             return cchart.getId();
-        } finally {
+        }
+        finally {
             newCursor.dispose();
         }
     }

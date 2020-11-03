@@ -14,7 +14,6 @@
 package com.github.microprograms.poi_template.render.compute;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.expression.EvaluationContext;
@@ -23,27 +22,23 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 /**
- * Spring expression language compute
+ * 基于Spring Expression Language的计算
  */
 public class SpELRenderDataCompute implements RenderDataCompute {
 
     private final ExpressionParser parser;
     private final EvaluationContext context;
 
-    public SpELRenderDataCompute(Object root) {
-        this(root, Collections.emptyMap());
-    }
-
     public SpELRenderDataCompute(Object root, Map<String, Method> spELFunction) {
         parser = new SpelExpressionParser();
         context = new StandardEvaluationContext(root);
-        ((StandardEvaluationContext) context).addPropertyAccessor(new ReadMapAccessor());
-        spELFunction.forEach(((StandardEvaluationContext) context)::registerFunction);
-    }
+        ((StandardEvaluationContext)context).addPropertyAccessor(new ReadMapAccessor());
+		spELFunction.forEach(((StandardEvaluationContext) context)::registerFunction);
+	}
 
-    @Override
+	@Override
     public Object compute(String el) {
-        // If cannot calculate expression, throw an exception
+        // mark: 无法计算或者读取表达式，会直接抛异常
         return parser.parseExpression(el).getValue(context);
     }
 

@@ -11,7 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.github.microprograms.poi_template.render.processor;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.github.microprograms.poi_template.XWPFTemplate;
 import com.github.microprograms.poi_template.render.compute.RenderDataCompute;
@@ -22,6 +27,7 @@ import com.github.microprograms.poi_template.template.IterableTemplate;
 import com.github.microprograms.poi_template.template.MetaTemplate;
 import com.github.microprograms.poi_template.template.PictureTemplate;
 import com.github.microprograms.poi_template.template.run.RunTemplate;
+import com.github.microprograms.poi_template.xwpf.XWPFTextboxContent;
 
 public abstract class DefaultTemplateProcessor implements Visitor {
 
@@ -34,6 +40,27 @@ public abstract class DefaultTemplateProcessor implements Visitor {
         this.template = template;
         this.resolver = resolver;
         this.renderDataCompute = renderDataCompute;
+    }
+
+    protected void visitOther(MetaTemplate template) {
+        // no-op
+    }
+
+    @SuppressWarnings("deprecation")
+    public void process(List<MetaTemplate> templates) {
+        // process in order( or sort first)
+        templates.forEach(template -> template.accept(this));
+        Set<XWPFTextboxContent> textboxs = new HashSet<>();
+        templates.forEach(template -> {
+            if (template instanceof RunTemplate) {
+                if (((RunTemplate) template).getRun().getParagraph().getBody() instanceof XWPFTextboxContent) {
+                    textboxs.add((XWPFTextboxContent) ((RunTemplate) template).getRun().getParagraph().getBody());
+                }
+            }
+        });
+        textboxs.forEach(content -> {
+            content.getXmlObject().set(content.getCTTxbxContent());
+        });
     }
 
     @Override
@@ -59,10 +86,6 @@ public abstract class DefaultTemplateProcessor implements Visitor {
     @Override
     public void visit(IterableTemplate iterableTemplate) {
         visitOther(iterableTemplate);
-    }
-
-    protected void visitOther(MetaTemplate template) {
-        // no-op
     }
 
 }

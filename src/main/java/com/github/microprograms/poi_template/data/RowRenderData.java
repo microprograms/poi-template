@@ -14,40 +14,73 @@
 package com.github.microprograms.poi_template.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import com.github.microprograms.poi_template.data.style.RowStyle;
+import com.github.microprograms.poi_template.data.style.TableStyle;
 
+/**
+ * 表格行数据
+ */
 public class RowRenderData implements RenderData {
 
-    private static final long serialVersionUID = 1L;
-    private List<CellRenderData> cells = new ArrayList<>();
-    private RowStyle rowStyle;
+    private List<CellRenderData> cells;
+
+    /**
+     * 行级样式，应用到该行所有单元格：背景色、行文字对齐方式
+     */
+    private TableStyle rowStyle;
+
+    public RowRenderData() {}
+
+    public RowRenderData(List<CellRenderData> cellDatas) {
+        this.cells = cellDatas;
+    }
+
+    public static RowRenderData build(String... cellStr) {
+        List<TextRenderData> cellDatas = new ArrayList<TextRenderData>();
+        if (null != cellStr) {
+            for (String col : cellStr) {
+                cellDatas.add(new TextRenderData(col));
+            }
+        }
+        return new RowRenderData(cellDatas, null);
+    }
+
+    public static RowRenderData build(TextRenderData... cellData) {
+        return new RowRenderData(null == cellData ? null : Arrays.asList(cellData), null);
+    }
+
+    public RowRenderData(List<TextRenderData> rowData, String backgroundColor) {
+        this.cells = new ArrayList<CellRenderData>();
+        if (null != rowData) {
+            for (TextRenderData data : rowData) {
+                this.cells.add(new CellRenderData(data));
+            }
+        }
+        TableStyle style = new TableStyle();
+        style.setBackgroundColor(backgroundColor);
+        this.rowStyle = style;
+    }
+
+    public int size() {
+        return null == cells ? 0 : cells.size();
+    }
 
     public List<CellRenderData> getCells() {
         return cells;
     }
 
-    public void setCells(List<CellRenderData> cells) {
-        this.cells = cells;
+    public void setCells(List<CellRenderData> cellDatas) {
+        this.cells = cellDatas;
     }
 
-    public RowStyle getRowStyle() {
+    public TableStyle getRowStyle() {
         return rowStyle;
     }
 
-    public void setRowStyle(RowStyle rowStyle) {
-        this.rowStyle = rowStyle;
-    }
-
-    public RowRenderData addCell(CellRenderData cell) {
-        cells.add(cell);
-        return this;
-    }
-
-    public int obtainColSize() {
-        if (null == cells || cells.isEmpty()) return 0;
-        return cells.size();
+    public void setRowStyle(TableStyle style) {
+        this.rowStyle = style;
     }
 
 }

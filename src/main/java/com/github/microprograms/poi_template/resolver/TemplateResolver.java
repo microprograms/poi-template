@@ -14,7 +14,6 @@
 package com.github.microprograms.poi_template.resolver;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,10 +22,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.xwpf.usermodel.BodyElementType;
-import org.apache.poi.xwpf.usermodel.IBody;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFChart;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFPicture;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -75,10 +75,8 @@ public class TemplateResolver extends AbstractResolver {
         if (null == doc) return metaTemplates;
         logger.info("Resolve the document start...");
         metaTemplates.addAll(resolveBodyElements(doc.getBodyElements()));
-        metaTemplates.addAll(resolveBodys(doc.getHeaderList()));
-        metaTemplates.addAll(resolveBodys(doc.getFooterList()));
-        metaTemplates.addAll(resolveBodys(doc.getFootnotes()));
-        metaTemplates.addAll(resolveBodys(doc.getEndnotes()));
+        metaTemplates.addAll(resolveHeaders(doc.getHeaderList()));
+        metaTemplates.addAll(resolveFooters(doc.getFooterList()));
         logger.info("Resolve the document end, resolve and create {} MetaTemplates.", metaTemplates.size());
         return metaTemplates;
     }
@@ -181,13 +179,13 @@ public class TemplateResolver extends AbstractResolver {
         CTDrawing ctDrawing = getCTDrawing(run);
         if (null == ctDrawing) return null;
         CTDrawingWrapper wrapper = new CTDrawingWrapper(ctDrawing);
+        String title = wrapper.getTitle();
+        if (null == title) return null;
         String rid = wrapper.getCharId();
         if (null == rid) return null;
         POIXMLDocumentPart documentPart = run.getDocument().getRelationById(rid);
         if (null == documentPart || !(documentPart instanceof XWPFChart)) return null;
-        ElementTemplate template = parseTemplateFactory(wrapper.getTitle(), (XWPFChart) documentPart, run);
-        return null == template ? (ChartTemplate) parseTemplateFactory(wrapper.getDesc(), (XWPFChart) documentPart, run)
-                : (ChartTemplate) template;
+        return (ChartTemplate) parseTemplateFactory(title, (XWPFChart) documentPart, run);
     }
 
     private List<PictureTemplate> resolveXWPFPictures(List<XWPFPicture> embeddedPictures) {
@@ -199,13 +197,10 @@ public class TemplateResolver extends AbstractResolver {
             CTDrawing ctDrawing = getCTDrawing(pic);
             if (null == ctDrawing) continue;
             CTDrawingWrapper wrapper = new CTDrawingWrapper(ctDrawing);
-            PictureTemplate pictureTemplate = (PictureTemplate) parseTemplateFactory(wrapper.getTitle(), pic, null);
-            if (null == pictureTemplate) {
-                pictureTemplate = (PictureTemplate) parseTemplateFactory(wrapper.getDesc(), pic, null);
-            }
-            if (null != pictureTemplate) {
-                metaTemplates.add(pictureTemplate);
-            }
+            String title = wrapper.getTitle();
+            if (null == title) continue;
+            PictureTemplate pictureTemplate = (PictureTemplate) parseTemplateFactory(title, pic, null);
+            if (null != pictureTemplate) metaTemplates.add(pictureTemplate);
         }
         return metaTemplates;
     }
@@ -232,7 +227,11 @@ public class TemplateResolver extends AbstractResolver {
 
     private <T extends MetaTemplate> void addNewMeta(final List<MetaTemplate> metaTemplates,
             final Deque<BlockTemplate> stack, T newMeta) {
-        addNewMeta(metaTemplates, stack, Collections.singletonList(newMeta));
+        if (stack.isEmpty()) {
+            metaTemplates.add(newMeta);
+        } else {
+            stack.peek().getTemplates().add(newMeta);
+        }
     }
 
     private void checkStack(Deque<BlockTemplate> stack) {
@@ -248,27 +247,36 @@ public class TemplateResolver extends AbstractResolver {
         return resolveBodyElements(runWrapper.getWpstxbx().getBodyElements());
     }
 
-    <T extends IBody> List<MetaTemplate> resolveBodys(List<T> bodys) {
+    List<MetaTemplate> resolveHeaders(List<XWPFHeader> headers) {
         List<MetaTemplate> metaTemplates = new ArrayList<>();
-        if (null == bodys) return metaTemplates;
+        if (null == headers) return metaTemplates;
 
-        bodys.forEach(body -> {
-            metaTemplates.addAll(resolveBodyElements(body.getBodyElements()));
+        headers.forEach(header -> {
+            metaTemplates.addAll(resolveBodyElements(header.getBodyElements()));
+        });
+        return metaTemplates;
+    }
+
+    List<MetaTemplate> resolveFooters(List<XWPFFooter> footers) {
+        List<MetaTemplate> metaTemplates = new ArrayList<>();
+        if (null == footers) return metaTemplates;
+
+        footers.forEach(footer -> {
+            metaTemplates.addAll(resolveBodyElements(footer.getBodyElements()));
         });
         return metaTemplates;
     }
 
     ElementTemplate parseTemplateFactory(String text, Object obj, XWPFRun run) {
-        if (null == text) return null;
         if (templatePattern.matcher(text).matches()) {
             logger.debug("Resolve where text: {}, and create ElementTemplate for {}", text, obj.getClass());
             String tag = gramerPattern.matcher(text).replaceAll("").trim();
             if (obj.getClass() == XWPFRun.class) {
-                return (RunTemplate) elementTemplateFactory.createRunTemplate(config, tag, (XWPFRun) obj);
+                return (RunTemplate) elementTemplateFactory.createRunTemplate(tag, (XWPFRun) obj);
             } else if (obj.getClass() == XWPFPicture.class) {
-                return (PictureTemplate) elementTemplateFactory.createPicureTemplate(config, tag, (XWPFPicture) obj);
+                return (PictureTemplate) elementTemplateFactory.createPicureTemplate(tag, (XWPFPicture) obj);
             } else if (obj.getClass() == XWPFChart.class) {
-                return (ChartTemplate) elementTemplateFactory.createChartTemplate(config, tag, (XWPFChart) obj, run);
+                return (ChartTemplate) elementTemplateFactory.createChartTemplate(tag, (XWPFChart) obj, run);
             }
         }
         return null;

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.microprograms.poi_template.expression;
+package com.github.microprograms.poi_template.el;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;

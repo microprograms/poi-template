@@ -17,20 +17,18 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-import com.github.microprograms.poi_template.data.NumberingRenderData;
+import com.github.microprograms.poi_template.data.MiniTableRenderData;
+import com.github.microprograms.poi_template.data.NumbericRenderData;
 import com.github.microprograms.poi_template.data.PictureRenderData;
-import com.github.microprograms.poi_template.data.TableRenderData;
-import com.github.microprograms.poi_template.policy.NumberingRenderPolicy;
+import com.github.microprograms.poi_template.policy.MiniTableRenderPolicy;
+import com.github.microprograms.poi_template.policy.NumbericRenderPolicy;
 import com.github.microprograms.poi_template.policy.PictureRenderPolicy;
-import com.github.microprograms.poi_template.policy.TableRenderPolicy;
 import com.github.microprograms.poi_template.policy.TextRenderPolicy;
 
 /**
- * The delegation of the current location provides more methods of operating the
- * current location.
+ * 对当前位置的委托，提供更多操作当前位置的方法。
  */
 public class WhereDelegate {
 
@@ -48,21 +46,22 @@ public class WhereDelegate {
         TextRenderPolicy.Helper.renderTextRun(run, data);
     }
 
-    public void renderNumbering(NumberingRenderData data) throws Exception {
-        NumberingRenderPolicy.Helper.renderNumbering(run, data);
+    public void renderNumberic(NumbericRenderData data) throws Exception {
+        NumbericRenderPolicy.Helper.renderNumberic(run, data);
     }
 
     public void renderPicture(PictureRenderData data) throws Exception {
         PictureRenderPolicy.Helper.renderPicture(run, data);
     }
 
-    public void renderTable(TableRenderData data) throws Exception {
-        TableRenderPolicy.Helper.renderTable(run, data);
+    public void renderMiniTable(MiniTableRenderData data) {
+        MiniTableRenderPolicy.Helper.renderMiniTable(run, data);
     }
 
     public void addPicture(InputStream inputStream, int type, int width, int height)
             throws InvalidFormatException, IOException {
-        run.addPicture(inputStream, type, "Generated", Units.pixelToEMU(width), Units.pixelToEMU(height));
+        run.addPicture(inputStream, type, "Generated", width * PictureRenderPolicy.Helper.EMU,
+                height * PictureRenderPolicy.Helper.EMU);
     }
 
 }

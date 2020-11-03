@@ -22,10 +22,10 @@ import java.util.Set;
 
 import com.github.microprograms.poi_template.exception.RenderException;
 import com.github.microprograms.poi_template.policy.DocxRenderPolicy;
-import com.github.microprograms.poi_template.policy.NumberingRenderPolicy;
+import com.github.microprograms.poi_template.policy.MiniTableRenderPolicy;
+import com.github.microprograms.poi_template.policy.NumbericRenderPolicy;
 import com.github.microprograms.poi_template.policy.PictureRenderPolicy;
 import com.github.microprograms.poi_template.policy.RenderPolicy;
-import com.github.microprograms.poi_template.policy.TableRenderPolicy;
 import com.github.microprograms.poi_template.policy.TextRenderPolicy;
 import com.github.microprograms.poi_template.policy.reference.DefaultChartTemplateRenderPolicy;
 import com.github.microprograms.poi_template.policy.reference.DefaultPictureTemplateRenderPolicy;
@@ -45,7 +45,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.xddf.usermodel.chart.ChartTypes;
 
 /**
- * 模板配置
+ * The config of template
  */
 public class Configure implements Cloneable {
 
@@ -83,50 +83,55 @@ public class Configure implements Cloneable {
      * eg. {{?user}} Hello, World {{/user}}
      * </p>
      */
-    private Pair<Character, Character> iterable = Pair.of(GramerSymbol.ITERABLE_START.getSymbol(),
+    Pair<Character, Character> iterable = Pair.of(GramerSymbol.ITERABLE_START.getSymbol(),
             GramerSymbol.BLOCK_END.getSymbol());
 
     /**
      * tag prefix
      */
-    private String gramerPrefix = "{{";
+    String gramerPrefix = "{{";
 
     /**
      * tag suffix
      */
-    private String gramerSuffix = "}}";
+    String gramerSuffix = "}}";
 
     /**
      * tag regular expression
      */
-    private String grammerRegex = DEFAULT_GRAMER_REGEX;
+    String grammerRegex = DEFAULT_GRAMER_REGEX;
+
+    /**
+     * the mode of compute tag
+     */
+    ELMode elMode = ELMode.POI_TL_STANDARD_MODE;
 
     /**
      * the factory of render data compute
      */
-    private RenderDataComputeFactory renderDataComputeFactory = new DefaultRenderDataComputeFactory(false);
+    RenderDataComputeFactory renderDataComputeFactory = new DefaultRenderDataComputeFactory(this);
 
     /**
      * the factory of resovler run template
      */
-    private ElementTemplateFactory elementTemplateFactory = new DefaultElementTemplateFactory();
+    ElementTemplateFactory elementTemplateFactory = new DefaultElementTemplateFactory(this);
 
     /**
      * the policy of process tag for valid render data error(null or illegal)
      */
-    private ValidErrorHandler handler = new ClearHandler();
+    ValidErrorHandler handler = new ClearHandler();
 
     /**
      * sp el custom static method
      */
-    private Map<String, Method> spELFunction = new HashMap<String, Method>();
+    Map<String, Method> spELFunction = new HashMap<String, Method>();
 
-    public Configure() {
+    Configure() {
         plugin(GramerSymbol.TEXT, new TextRenderPolicy());
         plugin(GramerSymbol.TEXT_ALIAS, new TextRenderPolicy());
         plugin(GramerSymbol.IMAGE, new PictureRenderPolicy());
-        plugin(GramerSymbol.TABLE, new TableRenderPolicy());
-        plugin(GramerSymbol.NUMBERING, new NumberingRenderPolicy());
+        plugin(GramerSymbol.TABLE, new MiniTableRenderPolicy());
+        plugin(GramerSymbol.NUMBERIC, new NumbericRenderPolicy());
         plugin(GramerSymbol.DOCX_TEMPLATE, new DocxRenderPolicy());
 
         RenderPolicy multiSeriesRenderPolicy = new MultiSeriesChartTemplateRenderPolicy();
@@ -141,40 +146,90 @@ public class Configure implements Cloneable {
         RenderPolicy singleSeriesRenderPolicy = new SingleSeriesChartTemplateRenderPolicy();
         plugin(ChartTypes.PIE, singleSeriesRenderPolicy);
         plugin(ChartTypes.PIE3D, singleSeriesRenderPolicy);
-        plugin(ChartTypes.DOUGHNUT, singleSeriesRenderPolicy);
 
         plugin(PictureTemplate.class, new DefaultPictureTemplateRenderPolicy());
         plugin(ChartTemplate.class, new DefaultChartTemplateRenderPolicy());
     }
 
+    /**
+     * 创建默认配置
+     * 
+     * @return
+     */
     public static Configure createDefault() {
-        return builder().build();
+        return newBuilder().build();
     }
 
-    public static ConfigureBuilder builder() {
+    /**
+     * 构建器
+     * 
+     * @return
+     */
+    public static ConfigureBuilder newBuilder() {
         return new ConfigureBuilder();
     }
 
+    /**
+     * 新增或变更语法插件
+     * 
+     * @param c      语法
+     * @param policy 策略
+     */
     public Configure plugin(char c, RenderPolicy policy) {
         DEFAULT_POLICYS.put(Character.valueOf(c), policy);
         return this;
     }
 
-    public Configure plugin(GramerSymbol symbol, RenderPolicy policy) {
+    /**
+     * 新增或变更语法插件
+     * 
+     * @param symbol 语法
+     * @param policy 策略
+     * @return
+     */
+    Configure plugin(GramerSymbol symbol, RenderPolicy policy) {
         DEFAULT_POLICYS.put(symbol.getSymbol(), policy);
         return this;
     }
 
-    public Configure plugin(Class<? extends MetaTemplate> clazz, RenderPolicy policy) {
+    /**
+     * 新增或者变更对象模板插件
+     * 
+     * @param clazz  对象模板类型
+     * @param policy 策略
+     * @return
+     */
+    Configure plugin(Class<? extends MetaTemplate> clazz, RenderPolicy policy) {
         DEFAULT_TEMPLATE_POLICYS.put(clazz, policy);
         return this;
     }
 
-    public Configure plugin(ChartTypes chartType, RenderPolicy policy) {
+    /**
+     * 新增或者变更图表插件
+     * 
+     * @param chartType 图表类型
+     * @param policy    策略
+     * @return
+     */
+    Configure plugin(ChartTypes chartType, RenderPolicy policy) {
         DEFAULT_CHART_POLICYS.put(chartType, policy);
         return this;
     }
 
+    public CustomPolicyFinder getCustomPolicyFinder() {
+        return CUSTOM_POLICY_FINDER;
+    }
+
+    public void setCustomPolicyFinder(CustomPolicyFinder customPolicyFinder) {
+        CUSTOM_POLICY_FINDER = customPolicyFinder;
+    }
+
+    /**
+     * 自定义模板和策略
+     * 
+     * @param tagName 模板名称
+     * @param policy  策略
+     */
     public void customPolicy(String tagName, RenderPolicy policy) {
         CUSTOM_POLICYS.put(tagName, policy);
     }
@@ -193,14 +248,6 @@ public class Configure implements Cloneable {
 
     public RenderPolicy getChartPolicy(ChartTypes type) {
         return DEFAULT_CHART_POLICYS.get(type);
-    }
-
-    public CustomPolicyFinder getCustomPolicyFinder() {
-        return CUSTOM_POLICY_FINDER;
-    }
-
-    public void setCustomPolicyFinder(CustomPolicyFinder customPolicyFinder) {
-        CUSTOM_POLICY_FINDER = customPolicyFinder;
     }
 
     public Map<Character, RenderPolicy> getDefaultPolicys() {
@@ -227,64 +274,36 @@ public class Configure implements Cloneable {
         return gramerPrefix;
     }
 
-    public void setGramerPrefix(String gramerPrefix) {
-        this.gramerPrefix = gramerPrefix;
-    }
-
     public String getGramerSuffix() {
         return gramerSuffix;
-    }
-
-    public void setGramerSuffix(String gramerSuffix) {
-        this.gramerSuffix = gramerSuffix;
     }
 
     public String getGrammerRegex() {
         return grammerRegex;
     }
 
-    public void setGrammerRegex(String grammerRegex) {
-        this.grammerRegex = grammerRegex;
+    public ELMode getElMode() {
+        return elMode;
     }
 
     public ValidErrorHandler getValidErrorHandler() {
         return handler;
     }
 
-    public void setValidErrorHandler(ValidErrorHandler handler) {
-        this.handler = handler;
-    }
-
     public RenderDataComputeFactory getRenderDataComputeFactory() {
         return renderDataComputeFactory;
-    }
-
-    public void setRenderDataComputeFactory(RenderDataComputeFactory renderDataComputeFactory) {
-        this.renderDataComputeFactory = renderDataComputeFactory;
     }
 
     public ElementTemplateFactory getElementTemplateFactory() {
         return elementTemplateFactory;
     }
 
-    public void setElementTemplateFactory(ElementTemplateFactory elementTemplateFactory) {
-        this.elementTemplateFactory = elementTemplateFactory;
-    }
-
     public Pair<Character, Character> getIterable() {
         return iterable;
     }
 
-    public void setIterable(Pair<Character, Character> iterable) {
-        this.iterable = iterable;
-    }
-
     public Map<String, Method> getSpELFunction() {
         return spELFunction;
-    }
-
-    public void setSpELFunction(Map<String, Method> spELFunction) {
-        this.spELFunction = spELFunction;
     }
 
     @Override
@@ -294,6 +313,7 @@ public class Configure implements Cloneable {
         sb.append("  Basic gramer: ").append(gramerPrefix).append(gramerSuffix).append("\n");
         sb.append("  If and foreach gramer: ").append(gramerPrefix).append(iterable.getLeft()).append(gramerSuffix);
         sb.append(gramerPrefix).append(iterable.getRight()).append(gramerSuffix).append("\n");
+        sb.append("  EL Mode: ").append(elMode).append("\n");
         sb.append("  Regex:").append(grammerRegex).append("\n");
         sb.append("  Valid Error Handler: ").append(handler.getClass().getSimpleName()).append("\n");
         sb.append("  Default Plugin: ").append("\n");
@@ -326,15 +346,35 @@ public class Configure implements Cloneable {
 
     @Override
     protected Configure clone() throws CloneNotSupportedException {
+        // shallow clone
         return (Configure) super.clone();
     }
 
-    public Configure copy(String prefix, String suffix) throws CloneNotSupportedException {
+    public Configure clone(String prefix, String suffix) throws CloneNotSupportedException {
         Configure clone = clone();
         clone.gramerPrefix = prefix;
         clone.gramerSuffix = suffix;
-        clone.grammerRegex = RegexUtils.createGeneral(clone.gramerPrefix, clone.gramerSuffix);
+        if (clone.elMode == ELMode.SPEL_MODE) {
+            clone.grammerRegex = RegexUtils.createGeneral(clone.gramerPrefix, clone.gramerSuffix);
+        }
         return clone;
+    }
+
+    public enum ELMode {
+
+        /**
+         * 标准模式：无法计算表达式时，RenderData默认为null值
+         */
+        POI_TL_STANDARD_MODE,
+        /**
+         * 严格模式：无法计算表达式直接抛出异常
+         */
+        POI_TL_STICT_MODE,
+        /**
+         * Spring EL模式
+         */
+        SPEL_MODE;
+
     }
 
     public interface ValidErrorHandler {
@@ -367,4 +407,5 @@ public class Configure implements Cloneable {
     public static interface CustomPolicyFinder {
         RenderPolicy getCustomPolicy(String tagName, Configure configure);
     }
+
 }

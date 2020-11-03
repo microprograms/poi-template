@@ -13,7 +13,4 @@
  */
 package com.github.microprograms.poi_template.data;
 
-import java.io.Serializable;
-
-public interface RenderData extends Serializable {
-}
+public interface RenderData {}

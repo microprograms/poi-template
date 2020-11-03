@@ -34,31 +34,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.microprograms.poi_template.util.StyleUtils;
-import com.github.microprograms.poi_template.xwpf.XWPFParagraphWrapper;
 
 /**
  * Running Run algorithm
  */
 public class RunningRunParagraph {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RunningRunParagraph.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RunningRunParagraph.class);
 
-    static QNameSet qname = QNameSet
-            .forArray(new QName[] { new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "br"),
-                    new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t"),
-                    new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "cr") });
+    static QNameSet qname = QNameSet.forArray(new QName[] {
+            new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "br"),
+            new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "t"),
+            new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "cr") });
 
-    private XWPFParagraphWrapper paragraph;
+    private XWPFParagraph paragraph;
     private List<XWPFRun> runs;
 
     List<Pair<RunEdge, RunEdge>> pairs = new ArrayList<>();
 
     public RunningRunParagraph(XWPFParagraph paragraph, Pattern pattern) {
-        this.paragraph = new XWPFParagraphWrapper(paragraph);
+        this.paragraph = paragraph;
         this.runs = paragraph.getRuns();
         if (null == runs || runs.isEmpty()) return;
 
-        Matcher matcher = pattern.matcher(paragraph.getParagraphText());
+        Matcher matcher = pattern.matcher(paragraph.getText());
         if (matcher.find()) {
             refactorParagraph();
         }
@@ -80,23 +79,21 @@ public class RunningRunParagraph {
             int startOffset = startEdge.getRunEdge();
             int endOffset = endEdge.getRunEdge();
 
+            // String startText = runs.get(startRunPos).getText(0);
+            // String endText = runs.get(endRunPos).getText(0);
             String startText = runs.get(startRunPos).text();
             String endText = runs.get(endRunPos).text();
-            
-            
             if (endOffset + 1 >= endText.length()) {
-                // delete the redundant end Run directly
+                // end run 无需split，若不是start run，直接remove
                 if (startRunPos != endRunPos) paragraph.removeRun(endRunPos);
             } else {
                 // split end run, set extra in a run
                 String extra = endText.substring(endOffset + 1, endText.length());
                 if (startRunPos == endRunPos) {
-                    // create run and set extra content
                     XWPFRun extraRun = paragraph.insertNewRun(endRunPos + 1);
                     StyleUtils.styleRun(extraRun, runs.get(endRunPos));
                     buildExtra(extra, extraRun);
                 } else {
-                    // Set the extra content to the redundant end run
                     XWPFRun extraRun = runs.get(endRunPos);
                     buildExtra(extra, extraRun);
                 }
@@ -108,7 +105,7 @@ public class RunningRunParagraph {
             }
 
             if (startOffset <= 0) {
-                // set the start Run directly
+                // start run 无需split
                 XWPFRun templateRun = runs.get(startRunPos);
                 templateRun.setText(startEdge.getTag(), 0);
                 templateRuns.add(runs.get(startRunPos));
@@ -116,13 +113,14 @@ public class RunningRunParagraph {
                 // split start run, set extra in a run
                 String extra = startText.substring(0, startOffset);
                 XWPFRun extraRun = runs.get(startRunPos);
-                buildExtra(extra, extraRun);
+                buildExtra(extra, extraRun);// TODO
 
                 XWPFRun templateRun = paragraph.insertNewRun(startRunPos + 1);
                 StyleUtils.styleRun(templateRun, extraRun);
                 templateRun.setText(startEdge.getTag(), 0);
                 templateRuns.add(runs.get(startRunPos + 1));
             }
+
         }
         return templateRuns;
     }
@@ -167,27 +165,25 @@ public class RunningRunParagraph {
                         }
                     }
                     paragraph.removeRun(i);
+                    this.runs = paragraph.getRuns();
                 }
             }
         }
-        this.runs = paragraph.getParagraph().getRuns();
     }
 
     private void buildRunEdge(Pattern pattern) {
-        // find all templates
-        Matcher matcher = pattern.matcher(paragraph.getParagraph().getParagraphText());
+        Matcher matcher = pattern.matcher(paragraph.getText());
         while (matcher.find()) {
             pairs.add(ImmutablePair.of(new RunEdge(matcher.start(), matcher.group()),
                     new RunEdge(matcher.end(), matcher.group())));
         }
         if (pairs.isEmpty()) return;
 
-        boolean endflag = false;
         int size = runs.size();
-        int cursor = 0;
-        int pos = 0;
+        int cursor = 0;// 游标
 
-        // find the run where all templates are located
+        int pos = 0;
+        // 计算第0个模板
         Pair<RunEdge, RunEdge> pair = pairs.get(pos);
         RunEdge startEdge = pair.getLeft();
         RunEdge endEdge = pair.getRight();
@@ -195,20 +191,24 @@ public class RunningRunParagraph {
         int end = endEdge.getAllEdge();
         for (int i = 0; i < size; i++) {
             XWPFRun run = runs.get(i);
+            // String text = run.getText(0);
             String text = run.text();
-            // empty run
+            // 游标略过empty run
             if (null == text) {
-                LOG.warn("found the empty text run,may be produce bug:" + run);
+                LOGGER.warn("found the empty text run,may be produce bug:" + run);
                 cursor += run.toString().length();
                 continue;
             }
-            LOG.debug(text);
-            // The starting position is not enough, the cursor points to the next run
+            LOGGER.debug(text);
+            // 起始位置不足，游标指向下一run
             if (text.length() + cursor < start) {
                 cursor += text.length();
+                // if (null != run.getCTR().getBrArray()){
+                // cursor += run.getCTR().getBrArray().length;
+                // }
                 continue;
             }
-            // index text
+            // 索引text
             for (int offset = 0; offset < text.length(); offset++) {
                 if (cursor + offset == start) {
                     startEdge.setRunPos(i);
@@ -220,12 +220,9 @@ public class RunningRunParagraph {
                     endEdge.setRunEdge(offset);
                     endEdge.setText(text);
 
-                    if (pos == pairs.size() - 1) {
-                        endflag = true;
-                        break;
-                    }
+                    if (pos == pairs.size() - 1) break;
 
-                    // Continue to calculate the next template
+                    // 计算下一个模板
                     pair = pairs.get(++pos);
                     startEdge = pair.getLeft();
                     endEdge = pair.getRight();
@@ -233,8 +230,7 @@ public class RunningRunParagraph {
                     end = endEdge.getAllEdge();
                 }
             }
-            if (endflag) break;
-            // the cursor points to the next run
+            // 游标指向下一run
             cursor += text.length();
         }
 
@@ -243,8 +239,8 @@ public class RunningRunParagraph {
 
     public void loggerInfo() {
         for (Pair<RunEdge, RunEdge> runEdges : pairs) {
-            LOG.debug("[Start]:" + runEdges.getLeft().toString());
-            LOG.debug("[End]:" + runEdges.getRight().toString());
+            LOGGER.debug("[Start]:" + runEdges.getLeft().toString());
+            LOGGER.debug("[End]:" + runEdges.getRight().toString());
         }
     }
 

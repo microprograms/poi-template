@@ -16,7 +16,6 @@ package com.github.microprograms.poi_template.xwpf;
 
 import java.util.List;
 
-import org.apache.poi.xwpf.usermodel.BodyElementType;
 import org.apache.poi.xwpf.usermodel.IBody;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.IRunBody;
@@ -27,185 +26,46 @@ import org.apache.xmlbeans.XmlCursor;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 
 import com.github.microprograms.poi_template.util.ParagraphUtils;
-import com.github.microprograms.poi_template.util.ReflectionUtils;
 
-/**
- * {@link IBody} operation
- */
-public interface BodyContainer extends ParentContext {
+public interface BodyContainer extends ParentContext{
 
-    /**
-     * get the position of paragraph in bodyElements
-     * 
-     * @param ctp paragraph
-     * @return the position of paragraph
-     */
-    default int getPosOfParagraphCTP(CTP ctp) {
-        IBodyElement current;
-        List<IBodyElement> bodyElements = getTarget().getBodyElements();
-        for (int i = 0; i < bodyElements.size(); i++) {
-            current = bodyElements.get(i);
-            if (current.getElementType() == BodyElementType.PARAGRAPH) {
-                if (((XWPFParagraph) current).getCTP().equals(ctp)) {
-                    return i;
-                }
-            }
-        }
-        return -1;
-    }
+    int getPosOfParagraphCTP(CTP startCtp);
 
-    /**
-     * get the position of paragraph in bodyElements
-     * 
-     * @param paragraph
-     * @return the position of paragraph
-     */
-    default int getPosOfParagraph(XWPFParagraph paragraph) {
-        return getPosOfParagraphCTP(paragraph.getCTP());
-    }
+    void removeBodyElement(int i);
 
-    /**
-     * get all bodyElements
-     * 
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    default List<IBodyElement> getBodyElements() {
-        return (List<IBodyElement>) ReflectionUtils.getValue("bodyElements", getTarget());
-    }
+    int getPosOfParagraph(XWPFParagraph startParagraph);
 
-    /**
-     * remove body element from bodyElements
-     * 
-     * @param pos the position of bodyElement
-     */
-    void removeBodyElement(int pos);
+    List<IBodyElement> getBodyElements();
 
-    /**
-     * insert paragraph at position of the cursor
-     * 
-     * @param insertPostionCursor
-     * @return the inserted paragraph
-     */
-    default XWPFParagraph insertNewParagraph(XmlCursor insertPostionCursor) {
-        return getTarget().insertNewParagraph(insertPostionCursor);
-    }
-
-    /**
-     * insert paragraph at position of run
-     * 
-     * @param run
-     * @return the inserted paragraph
-     */
+    XWPFParagraph insertNewParagraph(XmlCursor insertPostionCursor);
+    
     default XWPFParagraph insertNewParagraph(XWPFRun run) {
         XmlCursor cursor = ((XWPFParagraph) run.getParent()).getCTP().newCursor();
         return insertNewParagraph(cursor);
     }
 
-    /**
-     * get the position of paragraph in paragraphs
-     * 
-     * @param paragraph
-     * @return the position of paragraph
-     */
-    default int getParaPos(XWPFParagraph paragraph) {
-        List<XWPFParagraph> paragraphs = getTarget().getParagraphs();
-        for (int i = 0; i < paragraphs.size(); i++) {
-            if (paragraphs.get(i) == paragraph) {
-                return i;
-            }
-        }
-        return -1;
-    }
+    int getParaPos(XWPFParagraph insertNewParagraph);
 
-    /**
-     * set paragraph at position
-     * 
-     * @param paragraph
-     * @param pos
-     */
-    void setParagraph(XWPFParagraph paragraph, int pos);
+    void setParagraph(XWPFParagraph iBodyElement, int paraPos);
 
-    /**
-     * container itself
-     * 
-     * @return
-     */
     IBody getTarget();
 
-    /**
-     * insert table at position of the cursor
-     * 
-     * @param insertPostionCursor
-     * @return the inserted table
-     */
-    default XWPFTable insertNewTbl(XmlCursor insertPostionCursor) {
-        return getTarget().insertNewTbl(insertPostionCursor);
-    }
+    XWPFTable insertNewTbl(XmlCursor insertPostionCursor);
 
-    /**
-     * get the position of table in tables
-     * 
-     * @param table
-     * @return the position of table
-     */
-    default int getTablePos(XWPFTable table) {
-        List<XWPFTable> tables = getTarget().getTables();
-        for (int i = 0; i < tables.size(); i++) {
-            if (tables.get(i) == table) {
-                return i;
-            }
-        }
-        return -1;
-    }
+    int getTablePos(XWPFTable insertNewTbl);
 
-    /**
-     * set table
-     * 
-     * @param tablePos
-     * @param table
-     */
-    void setTable(int tablePos, XWPFTable table);
+    void setTable(int tablePos, XWPFTable iBodyElement);
 
-    /**
-     * update body elements
-     * 
-     * @param bodyElement
-     * @param copy
-     */
-    default void updateBodyElements(IBodyElement bodyElement, IBodyElement copy) {
-        int pos = -1;
-        List<IBodyElement> bodyElements = getBodyElements();
-        for (int i = 0; i < bodyElements.size(); i++) {
-            if (bodyElements.get(i) == bodyElement) {
-                pos = i;
-            }
-        }
-        if (-1 != pos) bodyElements.set(pos, copy);
-    }
+    void updateBodyElements(IBodyElement insertNewParagraph, IBodyElement copy);
 
-    /**
-     * insert table at position of the run
-     * 
-     * @param run
-     * @param row
-     * @param col
-     * @return
-     */
     XWPFTable insertNewTable(XWPFRun run, int row, int col);
 
-    /**
-     * clear run
-     * 
-     * @param run
-     */
     default void clearPlaceholder(XWPFRun run) {
         IRunBody parent = run.getParent();
         run.setText("", 0);
         if (parent instanceof XWPFParagraph) {
             String paragraphText = ParagraphUtils.trimLine((XWPFParagraph) parent);
-            boolean havePictures = ParagraphUtils.havePictures((XWPFParagraph) parent);
-            if ("".equals(paragraphText) && !havePictures) {
+            if ("".equals(paragraphText)) {
                 int pos = getPosOfParagraph((XWPFParagraph) parent);
                 removeBodyElement(pos);
             }

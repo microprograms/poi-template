@@ -14,48 +14,47 @@
 package com.github.microprograms.poi_template.config;
 
 /**
- * Built-in template syntax
+ * 默认模板语法
  */
 public enum GramerSymbol {
 
     /**
-     * Picture in the template
+     * 图片
      */
     IMAGE('@'),
 
     /**
-     * Text in the template
+     * 文本
      */
     TEXT('\0'),
 
     /**
-     * Text in the template, Text alias, compatible with #this, and not conflicting
-     * with existing table writing: {{=#this}}
+     * 文本别名，兼容#this写法不与现有的表格写法冲突：{{=#this}}
      */
     TEXT_ALIAS('='),
 
     /**
-     * Table in the template
+     * 表格
      */
     TABLE('#'),
 
     /**
-     * Numbering in the template
+     * 列表
      */
-    NUMBERING('*'),
+    NUMBERIC('*'),
 
     /**
-     * Nested/Merge/Include/Reference in the template
+     * 引用
      */
     DOCX_TEMPLATE('+'),
 
     /**
-     * Block(if & for each) start
+     * 循环(if & for each)语法块起始
      */
     ITERABLE_START('?'),
 
     /**
-     * Block end
+     * 语法块结束
      */
     BLOCK_END('/');
 

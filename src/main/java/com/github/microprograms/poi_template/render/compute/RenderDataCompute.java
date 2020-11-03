@@ -14,7 +14,7 @@
 package com.github.microprograms.poi_template.render.compute;
 
 /**
- * Expression compute
+ * 根据表达式计算渲染数据
  */
 @FunctionalInterface
 public interface RenderDataCompute {

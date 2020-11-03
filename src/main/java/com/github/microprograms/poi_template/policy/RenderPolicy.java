@@ -23,9 +23,9 @@ import com.github.microprograms.poi_template.template.ElementTemplate;
 public interface RenderPolicy {
 
     /**
-     * @param eleTemplate template tag
-     * @param data        render data
-     * @param template    XWPFTemplate instance
+     * @param eleTemplate 标签位置
+     * @param data        数据
+     * @param template    模板文档
      */
     void render(ElementTemplate eleTemplate, Object data, XWPFTemplate template);
 

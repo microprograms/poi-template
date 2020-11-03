@@ -13,17 +13,31 @@
  */
 package com.github.microprograms.poi_template.render.compute;
 
+import com.github.microprograms.poi_template.config.Configure;
+
 public class DefaultRenderDataComputeFactory implements RenderDataComputeFactory {
 
-    private final boolean isStrict;
+    private final Configure config;
 
-    public DefaultRenderDataComputeFactory(boolean isStrict) {
-        this.isStrict = isStrict;
+    public DefaultRenderDataComputeFactory(Configure config) {
+        this.config = config;
     }
 
     @Override
     public RenderDataCompute newCompute(Object model) {
-        return new DefaultELRenderDataCompute(model, isStrict);
+        RenderDataCompute render = null;
+        switch (this.config.getElMode()) {
+        case SPEL_MODE:
+            render = new SpELRenderDataCompute(model, config.getSpELFunction());
+            break;
+        case POI_TL_STICT_MODE:
+            render = new ELObjectRenderDataCompute(model, true);
+            break;
+        default:
+            render = new ELObjectRenderDataCompute(model, false);
+            break;
+        }
+        return render;
     }
 
 }

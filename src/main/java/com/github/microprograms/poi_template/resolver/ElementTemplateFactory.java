@@ -17,20 +17,16 @@ import org.apache.poi.xwpf.usermodel.XWPFChart;
 import org.apache.poi.xwpf.usermodel.XWPFPicture;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-import com.github.microprograms.poi_template.config.Configure;
 import com.github.microprograms.poi_template.template.ChartTemplate;
 import com.github.microprograms.poi_template.template.PictureTemplate;
 import com.github.microprograms.poi_template.template.run.RunTemplate;
 
-/**
- * Factory to create Element template
- */
 public interface ElementTemplateFactory {
 
-    RunTemplate createRunTemplate(Configure config, String tag, XWPFRun run);
+    RunTemplate createRunTemplate(String tag, XWPFRun run);
 
-    PictureTemplate createPicureTemplate(Configure config, String tag, XWPFPicture pic);
+    PictureTemplate createPicureTemplate(String tag, XWPFPicture pic);
 
-    ChartTemplate createChartTemplate(Configure config, String tag, XWPFChart chart, XWPFRun run);
+    ChartTemplate createChartTemplate(String tag, XWPFChart chart, XWPFRun run);
 
 }

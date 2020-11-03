@@ -26,15 +26,31 @@ import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.apache.xmlbeans.XmlCursor;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHdrFtr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 
 import com.github.microprograms.poi_template.util.ReflectionUtils;
 
 public class HeaderFooterBodyContainer implements BodyContainer {
 
-    private XWPFHeaderFooter headerFooter;
+    XWPFHeaderFooter headerFooter;
 
     public HeaderFooterBodyContainer(XWPFHeaderFooter cell) {
         this.headerFooter = cell;
+    }
+
+    @Override
+    public int getPosOfParagraphCTP(CTP startCtp) {
+        IBodyElement current;
+        List<IBodyElement> bodyElements = headerFooter.getBodyElements();
+        for (int i = 0; i < bodyElements.size(); i++) {
+            current = bodyElements.get(i);
+            if (current.getElementType() == BodyElementType.PARAGRAPH) {
+                if (((XWPFParagraph) current).getCTP().equals(startCtp)) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -51,6 +67,33 @@ public class HeaderFooterBodyContainer implements BodyContainer {
         }
     }
 
+    @Override
+    public int getPosOfParagraph(XWPFParagraph startParagraph) {
+        return getPosOfParagraphCTP(startParagraph.getCTP());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<IBodyElement> getBodyElements() {
+        return (List<IBodyElement>) ReflectionUtils.getValue("bodyElements", headerFooter);
+    }
+
+    @Override
+    public XWPFParagraph insertNewParagraph(XmlCursor insertPostionCursor) {
+        return headerFooter.insertNewParagraph(insertPostionCursor);
+    }
+
+    @Override
+    public int getParaPos(XWPFParagraph insertNewParagraph) {
+        List<XWPFParagraph> paragraphs = headerFooter.getParagraphs();
+        for (int i = 0; i < paragraphs.size(); i++) {
+            if (paragraphs.get(i) == insertNewParagraph) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public void setParagraph(XWPFParagraph p, int paraPos) {
@@ -64,6 +107,35 @@ public class HeaderFooterBodyContainer implements BodyContainer {
     @Override
     public IBody getTarget() {
         return headerFooter;
+    }
+
+    @Override
+    public void updateBodyElements(IBodyElement insertNewParagraph, IBodyElement copy) {
+        int pos = -1;
+        List<IBodyElement> bodyElements = getBodyElements();
+        for (int i = 0; i < bodyElements.size(); i++) {
+            if (bodyElements.get(i) == insertNewParagraph) {
+                pos = i;
+            }
+        }
+        if (-1 != pos) bodyElements.set(pos, copy);
+
+    }
+
+    @Override
+    public XWPFTable insertNewTbl(XmlCursor insertPostionCursor) {
+        return headerFooter.insertNewTbl(insertPostionCursor);
+    }
+
+    @Override
+    public int getTablePos(XWPFTable insertNewTbl) {
+        List<XWPFTable> tables = headerFooter.getTables();
+        for (int i = 0; i < tables.size(); i++) {
+            if (tables.get(i) == insertNewTbl) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @SuppressWarnings("unchecked")

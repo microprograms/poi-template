@@ -13,35 +13,15 @@
  */
 package com.github.microprograms.poi_template.data;
 
-import java.io.Serializable;
-
 /**
- * One Series data
+ * 图表系列
  */
-public class SeriesRenderData implements Serializable {
+public class SeriesRenderData {
 
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * series name
-     */
     private String name;
-    /**
-     * value must be mapped one to one with category
-     */
     private Number[] values;
 
-    /**
-     * Only specify the type of series in the combination chart
-     */
-    private ComboType comboType;
-
-    public SeriesRenderData() {
-    }
-
-    public enum ComboType {
-        BAR, LINE, AREA;
-    }
+    public SeriesRenderData() {}
 
     public SeriesRenderData(String name, Number[] data) {
         this.name = name;
@@ -62,14 +42,6 @@ public class SeriesRenderData implements Serializable {
 
     public void setValues(Number[] data) {
         this.values = data;
-    }
-
-    public ComboType getComboType() {
-        return comboType;
-    }
-
-    public void setComboType(ComboType comboType) {
-        this.comboType = comboType;
     }
 
 }

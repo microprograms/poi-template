@@ -20,70 +20,72 @@ import java.util.List;
 import com.github.microprograms.poi_template.util.ByteUtils;
 
 /**
- * Nested/Merge/Include/Reference docx
+ * 待合并子文档和数据集合
  */
 public class DocxRenderData implements RenderData {
 
-    private static final long serialVersionUID = 1L;
-
     /**
-     * docx byte array to be merged
+     * stream流无法重用，使用字节数组表示待合并文档
      */
-    private byte[] mergedDoc;
+    private transient byte[] mergeBytes;
+    
+    @SuppressWarnings("unused")
+    private File file;
 
     /**
-     * Render data for the docx template to be merged. If the merged document is not
-     * a template, it can be empty
+     * 渲染待合并文档模板的数据集合，若合并文档不是个模板，可为空
      */
     private List<?> dataModels;
 
-    DocxRenderData() {
-    }
-
     /**
-     * @param docx file to be merged
+     * @param docx
+     *            子文档
      */
     public DocxRenderData(File docx) {
         this(docx, null);
     }
 
     /**
+     * 构造子文档和渲染数据源
      * 
-     * @param docx        file to be merged
-     * @param renderDatas Render data for the docx template, the size of the list
-     *                    indicates the number of cycles
+     * @param docx
+     *            子文档
+     * @param renderDatas
+     *            渲染数据列表，列表的大小表示循环的次数
      */
     public DocxRenderData(File docx, List<?> renderDatas) {
         this(ByteUtils.getLocalByteArray(docx), renderDatas);
+        this.file = docx;
     }
 
     /**
-     * @param inputStream stream to be merged
+     * @param inputStream
+     *            子文档流
      */
     public DocxRenderData(InputStream inputStream) {
         this(inputStream, null);
     }
 
     /**
-     * @param inputStream stream to be merged
-     * @param renderDatas Render data for the stream template, the size of the list
-     *                    indicates the number of cycles
+     * @param inputStream
+     * @param renderDatas
      */
     public DocxRenderData(InputStream inputStream, List<?> renderDatas) {
         this(ByteUtils.toByteArray(inputStream), renderDatas);
     }
 
     /**
-     * @param input       byte array to be merged
+     * @param input
+     *            子文档字节数组
      * @param renderDatas
      */
     public DocxRenderData(byte[] input, List<?> renderDatas) {
         this.dataModels = renderDatas;
-        this.mergedDoc = input;
+        this.mergeBytes = input;
     }
 
-    public byte[] getMergedDoc() {
-        return mergedDoc;
+    public byte[] getDocx() {
+        return mergeBytes;
     }
 
     public List<?> getDataModels() {
@@ -93,7 +95,7 @@ public class DocxRenderData implements RenderData {
     public void setDataModels(List<?> renderDatas) {
         this.dataModels = renderDatas;
     }
-
+    
     public void setRenderDatas(List<?> renderDatas) {
         this.dataModels = renderDatas;
     }

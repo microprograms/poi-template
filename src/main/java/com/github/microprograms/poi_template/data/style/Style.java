@@ -13,45 +13,58 @@
  */
 package com.github.microprograms.poi_template.data.style;
 
-import java.io.Serializable;
-
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHighlightColor;
 
 /**
- * Text Style
+ * 样式
  */
-public class Style implements Serializable {
+public class Style {
 
-    private static final long serialVersionUID = 1L;
-
+    /**
+     * 文字颜色
+     */
     private String color;
+    /**
+     * 字体
+     */
     private String fontFamily;
+    /**
+     * 字体大小
+     */
     private int fontSize;
+    /**
+     * 粗体
+     */
     private Boolean isBold;
+    /**
+     * 斜体
+     */
     private Boolean isItalic;
+    /**
+     * 删除线
+     */
     private Boolean isStrike;
+    /**
+     * 下划线
+     */
     private Boolean isUnderLine;
 
     /**
-     * text background highlight color
+     * 文本背景突出显示颜色
      */
     private STHighlightColor.Enum highlightColor;
 
     /**
-     * point unit(pt)
+     * 间距，单位pt
      */
     private int characterSpacing;
 
     /**
-     * baseline, superscript, subscript
+     * 基线(baseline)、上标(superscript)、下标(subscript)
      */
     private String vertAlign;
 
     public Style() {
-    }
-
-    public static StyleBuilder builder() {
-        return new StyleBuilder();
     }
 
     public Style(String color) {
@@ -141,65 +154,6 @@ public class Style implements Serializable {
 
     public void setVertAlign(String vertAlign) {
         this.vertAlign = vertAlign;
-    }
-
-    public static final class StyleBuilder {
-
-        private Style style;
-
-        private StyleBuilder() {
-            style = new Style();
-        }
-
-        public StyleBuilder buildColor(String color) {
-            style.setColor(color);
-            return this;
-        }
-
-        public StyleBuilder buildFontFamily(String fontFamily) {
-            style.setFontFamily(fontFamily);
-            return this;
-        }
-
-        public StyleBuilder buildFontSize(int fontSize) {
-            style.setFontSize(fontSize);
-            return this;
-        }
-
-        public StyleBuilder buildBold() {
-            style.setBold(true);
-            return this;
-        }
-
-        public StyleBuilder buildItalic() {
-            style.setItalic(true);
-            return this;
-        }
-
-        public StyleBuilder buildStrike() {
-            style.setStrike(true);
-            return this;
-        }
-
-        public StyleBuilder buildUnderLine() {
-            style.setUnderLine(true);
-            return this;
-        }
-
-        public StyleBuilder buildSuper() {
-            style.setVertAlign("superscript");
-            return this;
-        }
-
-        public StyleBuilder buildSub() {
-            style.setVertAlign("subscript");
-            return this;
-        }
-
-        public Style build() {
-            return style;
-        }
-
     }
 
 }

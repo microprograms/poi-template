@@ -13,167 +13,37 @@
  */
 package com.github.microprograms.poi_template.data.style;
 
-import java.io.Serializable;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STJc;
 
-import org.apache.poi.xwpf.usermodel.TableRowAlign;
-import org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType;
-
-import com.github.microprograms.poi_template.util.UnitUtils;
-
-public class TableStyle implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    private TableRowAlign align;
-
-    private BorderStyle leftBorder;
-    private BorderStyle rightBorder;
-    private BorderStyle topBorder;
-    private BorderStyle bottomBorder;
-    private BorderStyle insideHBorder;
-    private BorderStyle insideVBorder;
+/**
+ * 表格样式
+ */
+public class TableStyle {
 
     /**
-     * auto, xx% or xx in twips
-     * 
-     * @see #{@link UnitUtils#cm2Twips()}
+     * 背景色
      */
-    private String width;
+    private String backgroundColor;
 
     /**
-     * in twips
-     * 
-     * @see #{@link UnitUtils#cm2Twips()}
+     * 对齐方式 STJc.LEFT 左对齐 STJc.CENTER 居中对齐 STJc.RIGHT 右对齐
      */
-    private int[] colWidths;
+    private STJc.Enum align;
 
-    public TableRowAlign getAlign() {
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(String backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    public STJc.Enum getAlign() {
         return align;
     }
 
-    public void setAlign(TableRowAlign align) {
+    public void setAlign(STJc.Enum align) {
         this.align = align;
     }
-
-    public BorderStyle getLeftBorder() {
-        return leftBorder;
-    }
-
-    public void setLeftBorder(BorderStyle leftBorder) {
-        this.leftBorder = leftBorder;
-    }
-
-    public BorderStyle getRightBorder() {
-        return rightBorder;
-    }
-
-    public void setRightBorder(BorderStyle rightBorder) {
-        this.rightBorder = rightBorder;
-    }
-
-    public BorderStyle getTopBorder() {
-        return topBorder;
-    }
-
-    public void setTopBorder(BorderStyle topBorder) {
-        this.topBorder = topBorder;
-    }
-
-    public BorderStyle getBottomBorder() {
-        return bottomBorder;
-    }
-
-    public void setBottomBorder(BorderStyle bottomBorder) {
-        this.bottomBorder = bottomBorder;
-    }
-
-    public BorderStyle getInsideHBorder() {
-        return insideHBorder;
-    }
-
-    public void setInsideHBorder(BorderStyle insideHBorder) {
-        this.insideHBorder = insideHBorder;
-    }
-
-    public BorderStyle getInsideVBorder() {
-        return insideVBorder;
-    }
-
-    public void setInsideVBorder(BorderStyle insideVBorder) {
-        this.insideVBorder = insideVBorder;
-    }
-
-    public String getWidth() {
-        return width;
-    }
-
-    /**
-     * @param width auto, xx% or xx in twips
-     */
-    public void setWidth(String width) {
-        this.width = width;
-    }
-
-    public int[] getColWidths() {
-        return colWidths;
-    }
-
-    /**
-     * @param colWidths in twips #{@link UnitUtils#cm2Twips()}
-     */
-    public void setColWidths(int[] colWidths) {
-        this.colWidths = colWidths;
-    }
-    
-    public static class BorderStyle implements Serializable {
-
-        public static final BorderStyle DEFAULT = new BorderStyle();
-
-        static {
-            DEFAULT.setSize(4);
-            DEFAULT.setColor("auto");
-            DEFAULT.setType(XWPFBorderType.SINGLE);
-        }
-
-        private static final long serialVersionUID = 1L;
-
-        /**
-         * specified in measurements of eighths of a point
-         */
-        private int size;
-        /**
-         * A value of auto is also permitted and will allow the consuming word processor
-         * to determine the color.
-         */
-        private String color;
-
-        private XWPFBorderType type;
-
-        public String getColor() {
-            return color;
-        }
-
-        public void setColor(String color) {
-            this.color = color;
-        }
-
-        public int getSize() {
-            return size;
-        }
-
-        public void setSize(int size) {
-            this.size = size;
-        }
-
-        public XWPFBorderType getType() {
-            return type;
-        }
-
-        public void setType(XWPFBorderType type) {
-            this.type = type;
-        }
-
-    }
-
 
 }

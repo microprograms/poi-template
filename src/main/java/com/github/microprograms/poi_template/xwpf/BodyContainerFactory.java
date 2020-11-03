@@ -22,25 +22,21 @@ import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 
 import com.github.microprograms.poi_template.template.IterableTemplate;
 
-/**
- * Factory to create BodyContainer
- */
 public class BodyContainerFactory {
 
     public static BodyContainer getBodyContainer(IBody body) {
+        BodyContainer bodyContainer = null;
         if (body instanceof XWPFTableCell) {
-            return new CellBodyContainer((XWPFTableCell) body);
+            bodyContainer = new CellBodyContainer((XWPFTableCell) body);
         } else if (body instanceof XWPFHeaderFooter) {
-            return new HeaderFooterBodyContainer((XWPFHeaderFooter) body);
-        } else if (body instanceof XWPFTextboxContent) {
-            return new TextBoxBodyContainer((XWPFTextboxContent) body);
+            bodyContainer = new HeaderFooterBodyContainer((XWPFHeaderFooter) body);
         } else {
-            return new DocumentBodyContainer((NiceXWPFDocument) body);
+            bodyContainer = new DocumentBodyContainer((NiceXWPFDocument) body);
         }
+        return bodyContainer;
     }
 
     public static BodyContainer getBodyContainer(XWPFRun run) {
-        // TODO XWPFSdt
         return getBodyContainer(((XWPFParagraph) run.getParent()).getBody());
     }
 

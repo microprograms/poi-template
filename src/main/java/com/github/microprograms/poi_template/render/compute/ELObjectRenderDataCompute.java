@@ -13,19 +13,19 @@
  */
 package com.github.microprograms.poi_template.render.compute;
 
+import com.github.microprograms.poi_template.el.ELObject;
 import com.github.microprograms.poi_template.exception.ExpressionEvalException;
-import com.github.microprograms.poi_template.expression.DefaultEL;
 
 /**
- * default expression compute
+ * 基于ELObject的计算
  */
-public class DefaultELRenderDataCompute implements RenderDataCompute {
+public class ELObjectRenderDataCompute implements RenderDataCompute {
 
-    private DefaultEL elObject;
+    private ELObject elObject;
     private boolean isStrict;
 
-    public DefaultELRenderDataCompute(Object root, boolean isStrict) {
-        elObject = DefaultEL.create(root);
+    public ELObjectRenderDataCompute(Object root, boolean isStrict) {
+        elObject = ELObject.create(root);
         this.isStrict = isStrict;
     }
 
@@ -34,8 +34,9 @@ public class DefaultELRenderDataCompute implements RenderDataCompute {
         try {
             return elObject.eval(el);
         } catch (ExpressionEvalException e) {
-            if (isStrict) throw e;
-            // Cannot calculate the expression, the default returns null
+            if (isStrict)
+                throw e;
+            // mark：无法计算或者读取表达式，默认返回null
             return null;
         }
     }

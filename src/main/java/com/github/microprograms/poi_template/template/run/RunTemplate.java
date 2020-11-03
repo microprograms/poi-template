@@ -13,13 +13,15 @@
  */
 package com.github.microprograms.poi_template.template.run;
 
+import java.util.List;
+
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import com.github.microprograms.poi_template.config.Configure;
 import com.github.microprograms.poi_template.policy.RenderPolicy;
 import com.github.microprograms.poi_template.render.processor.Visitor;
 import com.github.microprograms.poi_template.template.ElementTemplate;
-import com.github.microprograms.poi_template.util.ParagraphUtils;
 
 /**
  * Basic docx template element: XWPFRun
@@ -27,9 +29,8 @@ import com.github.microprograms.poi_template.util.ParagraphUtils;
 public class RunTemplate extends ElementTemplate {
 
     protected XWPFRun run;
-
-    public RunTemplate() {
-    }
+    
+    public RunTemplate() {}
 
     public RunTemplate(String tagName, XWPFRun run) {
         this.tagName = tagName;
@@ -37,7 +38,27 @@ public class RunTemplate extends ElementTemplate {
     }
 
     public Integer getRunPos() {
-        return ParagraphUtils.getRunPos(run);
+        XWPFParagraph paragraph = (XWPFParagraph) run.getParent();
+        List<XWPFRun> runs = paragraph.getRuns();
+        for (int i = 0; i < runs.size(); i++) {
+            if (run == runs.get(i)) { return i; }
+        }
+        return null;
+    }
+
+    public XWPFRun getBeforeRun() {
+        Integer runPos = getRunPos();
+        if (null == runPos) return null;
+        XWPFParagraph paragraph = (XWPFParagraph) run.getParent();
+        return runPos == 0 ? null : paragraph.getRuns().get(runPos - 1);
+    }
+
+    public XWPFRun getAfterRun() {
+        Integer runPos = getRunPos();
+        if (null == runPos) return null;
+        XWPFParagraph paragraph = (XWPFParagraph) run.getParent();
+        return runPos == (paragraph.getRuns().size() - 1) ? null
+                : paragraph.getRuns().get(runPos + 1);
     }
 
     /**
@@ -48,7 +69,8 @@ public class RunTemplate extends ElementTemplate {
     }
 
     /**
-     * @param run the run to set
+     * @param run
+     *            the run to set
      */
     public void setRun(XWPFRun run) {
         this.run = run;

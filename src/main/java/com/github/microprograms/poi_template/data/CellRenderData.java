@@ -13,35 +13,44 @@
  */
 package com.github.microprograms.poi_template.data;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.github.microprograms.poi_template.data.style.TableStyle;
 
-import com.github.microprograms.poi_template.data.style.CellStyle;
+/**
+ * 单元格数据
+ */
+public class CellRenderData {
 
-public class CellRenderData implements RenderData {
+    protected TextRenderData cellText;
 
-    private static final long serialVersionUID = 1L;
-    private List<ParagraphRenderData> paragraphs = new ArrayList<>();
-    private CellStyle cellStyle;
+    /**
+     * 单元格级别的样式：背景色、单元格文字对齐方式
+     */
+    protected TableStyle cellStyle;
 
-    public List<ParagraphRenderData> getParagraphs() {
-        return paragraphs;
+    public CellRenderData() {}
+
+    public CellRenderData(TextRenderData renderData) {
+        this.cellText = renderData;
     }
 
-    public void setParagraphs(List<ParagraphRenderData> paragraphs) {
-        this.paragraphs = paragraphs;
+    public CellRenderData(TextRenderData renderData, TableStyle cellStyle) {
+        this.cellText = renderData;
+        this.cellStyle = cellStyle;
     }
 
-    public CellRenderData addParagraph(ParagraphRenderData para) {
-        this.paragraphs.add(para);
-        return this;
+    public TextRenderData getCellText() {
+        return cellText;
     }
 
-    public CellStyle getCellStyle() {
+    public void setCellText(TextRenderData renderData) {
+        this.cellText = renderData;
+    }
+
+    public TableStyle getCellStyle() {
         return cellStyle;
     }
 
-    public void setCellStyle(CellStyle cellStyle) {
+    public void setCellStyle(TableStyle cellStyle) {
         this.cellStyle = cellStyle;
     }
 

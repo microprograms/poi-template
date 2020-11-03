@@ -24,7 +24,7 @@ import com.github.microprograms.poi_template.template.run.RunTemplate;
 import com.github.microprograms.poi_template.xwpf.NiceXWPFDocument;
 
 /**
- * Template context
+ * 模板标签上下文
  */
 public class RenderContext<T> {
 

@@ -57,8 +57,9 @@ public class LogProcessor implements Visitor {
     @Override
     public void visit(PictureTemplate pictureTemplate) {
         log.info("{}{}", indentState, pictureTemplate);
+        
     }
-
+    
     @Override
     public void visit(IterableTemplate iterableTemplate) {
         log.info("{}{}", indentState, iterableTemplate.getStartMark());

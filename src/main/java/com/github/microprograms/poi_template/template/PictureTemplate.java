@@ -46,7 +46,6 @@ public class PictureTemplate extends ElementTemplate {
         visitor.visit(this);
     }
 
-    @Override
     public RenderPolicy findPolicy(Configure config) {
         RenderPolicy renderPolicy = config.getCustomPolicy(tagName);
         return null == renderPolicy ? config.getTemplatePolicy(this.getClass()) : renderPolicy;

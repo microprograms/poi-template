@@ -13,31 +13,25 @@
  */
 package com.github.microprograms.poi_template.data;
 
-import com.github.microprograms.poi_template.data.style.Style;
+import com.github.microprograms.poi_template.data.builder.StyleBuilder;
 
 /**
- * hyper link text
+ * 超链接
  */
-public class HyperlinkTextRenderData extends TextRenderData {
-
-    private static final long serialVersionUID = 1L;
+public class HyperLinkTextRenderData extends TextRenderData {
 
     /**
-     * link format: https://github.com/microprograms <br/>
-     * 
-     * mail format: mailto:xuzewei_2012@126.com?subject=poi-template <br/>
-     * 
-     * anchor format：anchor:AnchorName
+     * 超链接: https://github.com/microprograms <br/>
+     * 发送邮件链接: mailto:xuzewei_2012@126.com?subject=poi-template <br/>
+     * 锚点: anchor:AnchorName
      */
     private String url;
 
-    HyperlinkTextRenderData() {
-    }
-
-    public HyperlinkTextRenderData(String text, String url) {
+    public HyperLinkTextRenderData(String text, String url) {
         super(text);
         this.url = url;
-        this.style = Style.builder().buildColor("0000FF").buildUnderLine().build();
+        // 链接默认蓝色加下划线
+        this.style = StyleBuilder.newBuilder().buildColor("0000FF").buildUnderLine().build();
     }
 
     public String getUrl() {
@@ -46,13 +40,6 @@ public class HyperlinkTextRenderData extends TextRenderData {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[").append(text).append("](").append(url).append(")");
-        return sb.toString();
     }
 
 }

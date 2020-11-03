@@ -14,11 +14,9 @@
 package com.github.microprograms.poi_template.data;
 
 /**
- * single series chart:doughnut, pie(3D)
+ * 单系列图表：环形图、饼图
  */
 public class ChartSingleSeriesRenderData implements RenderData {
-
-    private static final long serialVersionUID = 1L;
 
     private String chartTitle;
     private String[] categories;

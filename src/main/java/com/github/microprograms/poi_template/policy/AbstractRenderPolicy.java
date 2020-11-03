@@ -27,8 +27,7 @@ import com.github.microprograms.poi_template.xwpf.BodyContainer;
 import com.github.microprograms.poi_template.xwpf.BodyContainerFactory;
 
 /**
- * General logic for data verification, rendering, clearing template tags, and
- * exception handling
+ * 提供了数据校验、渲染、清空模板标签、异常处理的通用逻辑
  */
 public abstract class AbstractRenderPolicy<T> implements RenderPolicy {
 
@@ -45,15 +44,15 @@ public abstract class AbstractRenderPolicy<T> implements RenderPolicy {
             throw new RenderException("Error Render Data format for template: " + eleTemplate.getSource(), e);
         }
 
+        // validate
         RenderContext<T> context = new RenderContext<T>(eleTemplate, model, template);
-        try {
-            // validate
-            if (!validate(model)) {
-                postValidError(context);
-                return;
-            }
+        if (!validate(model)) {
+            postValidError(context);
+            return;
+        }
 
-            // do render
+        // do render
+        try {
             beforeRender(context);
             doRender(context);
             afterRender(context);
@@ -67,7 +66,7 @@ public abstract class AbstractRenderPolicy<T> implements RenderPolicy {
 
     protected boolean validate(T data) {
         return true;
-    }
+    };
 
     protected void beforeRender(RenderContext<T> context) {
     }
@@ -81,20 +80,20 @@ public abstract class AbstractRenderPolicy<T> implements RenderPolicy {
 
     protected void postValidError(RenderContext<T> context) {
         ValidErrorHandler errorHandler = context.getConfig().getValidErrorHandler();
-        logger.info("The data [{}] of the template {} is illegal, will apply error handler [{}]", context.getData(),
+        logger.error("The data [{}] of the template {} is illegal, will apply error handler [{}]", context.getData(),
                 context.getTagSource(), ClassUtils.getSimpleName(errorHandler.getClass()));
         errorHandler.handler(context);
     }
 
     /**
-     * For operations that are not in the current tag position, the tag needs to be
-     * cleared
+     * 
+     * 对于不在当前标签位置的操作，需要清除标签
      * 
      * @param context
-     * @param clearParagraph if clear paragraph
+     * @param clearParagraph
      * 
      */
-    protected void clearPlaceholder(RenderContext<?> context, boolean clearParagraph) {
+    public static void clearPlaceholder(RenderContext<?> context, boolean clearParagraph) {
         XWPFRun run = context.getRun();
         if (clearParagraph) {
             BodyContainer bodyContainer = BodyContainerFactory.getBodyContainer(run);

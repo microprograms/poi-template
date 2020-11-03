@@ -13,6 +13,8 @@
  */
 package com.github.microprograms.poi_template.policy.reference;
 
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
+import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFHeaderFooter;
 import org.apache.poi.xwpf.usermodel.XWPFPicture;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -22,23 +24,32 @@ import org.openxmlformats.schemas.drawingml.x2006.picture.CTPicture;
 
 import com.github.microprograms.poi_template.XWPFTemplate;
 import com.github.microprograms.poi_template.data.PictureRenderData;
+import com.github.microprograms.poi_template.policy.PictureRenderPolicy.Helper;
 import com.github.microprograms.poi_template.template.PictureTemplate;
 import com.github.microprograms.poi_template.util.ReflectionUtils;
+import com.github.microprograms.poi_template.xwpf.NiceXWPFDocument;
 
 public class DefaultPictureTemplateRenderPolicy
         extends AbstractTemplateRenderPolicy<PictureTemplate, PictureRenderData> {
 
     @Override
-    public void doRender(PictureTemplate pictureTemplate, PictureRenderData data, XWPFTemplate template)
+    public void doRender(PictureTemplate pictureTemplate, PictureRenderData picdata, XWPFTemplate template)
             throws Exception {
+        if (null == picdata) return;
         XWPFPicture t = pictureTemplate.getPicture();
-        byte[] image = data.getImage();
+        NiceXWPFDocument doc = template.getXWPFDocument();
+        int format = Helper.suggestFileType(picdata.getPath());
+        byte[] data = picdata.getData();
         XWPFRun run = (XWPFRun) ReflectionUtils.getValue("run", t);
-        if (run.getParent().getPart() instanceof XWPFHeaderFooter) {
+        if (run.getParent().getPart() instanceof XWPFHeader) {
             XWPFHeaderFooter headerFooter = (XWPFHeaderFooter) run.getParent().getPart();
-            setPictureReference(t, headerFooter.addPictureData(image, data.getPictureType().type()));
+            setPictureReference(t, headerFooter.addPictureData(data, format));
+
+        } else if (run.getParent().getPart() instanceof XWPFFooter) {
+            XWPFHeaderFooter headerFooter = (XWPFHeaderFooter) run.getParent().getPart();
+            setPictureReference(t, headerFooter.addPictureData(data, format));
         } else {
-            setPictureReference(t, template.getXWPFDocument().addPictureData(image, data.getPictureType().type()));
+            setPictureReference(t, doc.addPictureData(data, format));
         }
     }
 

@@ -14,23 +14,22 @@
 package com.github.microprograms.poi_template.resolver;
 
 /**
- * Running boundary
+ * 奔跑的边界
  */
 public class RunEdge {
 
     /**
-     * The global position of the starting text inside the paragraph
+     * 起始文本在段落内部的全局位置
      */
     private int allEdge;
 
     /**
-     * The position of the starting text inside the run
+     * 起始文本在run内部的位置
      */
     private int runEdge;
 
     /**
-     * The position of the run within the paragraph where the starting text is
-     * located
+     * 起始文本所在的run在段落内的位置
      */
     private int runPos;
 
@@ -85,10 +84,7 @@ public class RunEdge {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("The run position of ").append(tag).append(" is ").append(runPos)
-                .append(", Offset in run is ").append(runEdge);
-        return sb.toString();
+        return "段落内第" + runPos + "个run,标签为" + tag + ", 在这个run内的边界位置为：" + runEdge;
     }
 
 }

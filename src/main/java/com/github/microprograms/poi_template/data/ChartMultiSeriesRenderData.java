@@ -16,18 +16,15 @@ package com.github.microprograms.poi_template.data;
 import java.util.List;
 
 /**
- * multi series chart: Bar(3D), Line(3D), Radar， Area(3D)
+ * 多系列图表：条形图、柱形图、折线图、雷达图
  */
 public class ChartMultiSeriesRenderData implements RenderData {
-
-    private static final long serialVersionUID = 1L;
 
     private String chartTitle;
     private String[] categories;
     private List<SeriesRenderData> seriesDatas;
 
-    public ChartMultiSeriesRenderData() {
-    }
+    public ChartMultiSeriesRenderData() {}
 
     public String getChartTitle() {
         return chartTitle;

@@ -11,15 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.microprograms.poi_template.expression;
+package com.github.microprograms.poi_template.el;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * default el expression
+ * calculate expression
  */
-public class DefaultEL {
+public class ELObject {
 
     final Object model;
 
@@ -28,18 +28,16 @@ public class DefaultEL {
     // Same variable reference with SpEL
     private static final String THIS = "#this";
 
-    public DefaultEL(Object model) {
+    public ELObject(Object model) {
         this.model = model;
     }
 
-    public static DefaultEL create(Object model) {
-        return new DefaultEL(model);
+    public static ELObject create(Object model) {
+        return new ELObject(model);
     }
 
     public Object eval(String el) {
-        if (THIS.equals(el)) {
-            return model;
-        }
+        if (THIS.equals(el)) { return model; }
         Dot dot = new Dot(el);
         return dot.eval(this);
     }
