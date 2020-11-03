@@ -54,6 +54,8 @@ public class Configure implements Cloneable {
      */
     public static final String DEFAULT_GRAMER_REGEX = "((#)?[\\w\\u4e00-\\u9fa5]+(\\.[\\w\\u4e00-\\u9fa5]+)*)?";
 
+    private CustomPolicyFinder CUSTOM_POLICY_FINDER = (tagName, configure) -> configure.getCustomPolicys().get(tagName);
+
     /**
      * template by bind: Highest priority
      */
@@ -182,7 +184,7 @@ public class Configure implements Cloneable {
     }
 
     public RenderPolicy getCustomPolicy(String tagName) {
-        return CUSTOM_POLICYS.get(tagName);
+        return CUSTOM_POLICY_FINDER.getCustomPolicy(tagName, this);
     }
 
     public RenderPolicy getDefaultPolicy(Character sign) {
@@ -191,6 +193,14 @@ public class Configure implements Cloneable {
 
     public RenderPolicy getChartPolicy(ChartTypes type) {
         return DEFAULT_CHART_POLICYS.get(type);
+    }
+
+    public CustomPolicyFinder getCustomPolicyFinder() {
+        return CUSTOM_POLICY_FINDER;
+    }
+
+    public void setCustomPolicyFinder(CustomPolicyFinder customPolicyFinder) {
+        CUSTOM_POLICY_FINDER = customPolicyFinder;
     }
 
     public Map<Character, RenderPolicy> getDefaultPolicys() {
@@ -353,4 +363,8 @@ public class Configure implements Cloneable {
         }
     }
 
+    @FunctionalInterface
+    public static interface CustomPolicyFinder {
+        RenderPolicy getCustomPolicy(String tagName, Configure configure);
+    }
 }

@@ -16,6 +16,7 @@ package com.github.microprograms.poi_template.config;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import com.github.microprograms.poi_template.config.Configure.CustomPolicyFinder;
 import com.github.microprograms.poi_template.config.Configure.ValidErrorHandler;
 import com.github.microprograms.poi_template.policy.RenderPolicy;
 import com.github.microprograms.poi_template.render.compute.DefaultELRenderDataCompute;
@@ -103,6 +104,11 @@ public class ConfigureBuilder {
 
     public ConfigureBuilder bind(String tagName, RenderPolicy policy) {
         config.customPolicy(tagName, policy);
+        return this;
+    }
+
+    public ConfigureBuilder customPolicyFinder(CustomPolicyFinder customPolicyFinder) {
+        config.setCustomPolicyFinder(customPolicyFinder);
         return this;
     }
 
